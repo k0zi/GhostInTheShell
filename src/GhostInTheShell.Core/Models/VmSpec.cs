@@ -10,7 +10,8 @@ public sealed partial record VmSpec(
     int MemoryMb,
     int DiskGb,
     string OsId,
-    IReadOnlyList<string> AgentIds)
+    IReadOnlyList<string> AgentIds,
+    IReadOnlyList<string> ToolchainIds)
 {
     public static bool IsValidName(string? name) => name is not null && NamePattern().IsMatch(name);
 

@@ -10,6 +10,7 @@ internal static class PodmanLabels
     public const string Name = "gits.name";
     public const string Os = "gits.os";
     public const string Agents = "gits.agents";
+    public const string Toolchains = "gits.toolchains";
     public const string Cpus = "gits.cpus";
     public const string MemoryMb = "gits.memory-mb";
     public const string DiskGb = "gits.disk-gb";

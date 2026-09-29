@@ -12,6 +12,29 @@ public sealed partial class AgentOption(AgentDefinition definition) : Observable
     public AgentDefinition Definition { get; } = definition;
 
     [ObservableProperty] private bool _isSelected;
+
+    /// <summary>False when the agent's prerequisites have no install command for the chosen distro.</summary>
+    [ObservableProperty] private bool _isSupported = true;
+
+    partial void OnIsSupportedChanged(bool value)
+    {
+        if (!value) IsSelected = false;
+    }
+}
+
+public sealed partial class ToolchainOption(ToolchainDefinition definition) : ObservableObject
+{
+    public ToolchainDefinition Definition { get; } = definition;
+
+    [ObservableProperty] private bool _isSelected;
+
+    /// <summary>False when the chosen distro has no install command for this toolchain.</summary>
+    [ObservableProperty] private bool _isSupported = true;
+
+    partial void OnIsSupportedChanged(bool value)
+    {
+        if (!value) IsSelected = false;
+    }
 }
 
 /// <summary>The "new machine" form. Completes with a spec, or null when cancelled.</summary>
@@ -26,7 +49,9 @@ public sealed partial class CreateMachineViewModel : ViewModelBase
         _existingNames = existingNames;
         OperatingSystems = catalog.OperatingSystems;
         Agents = new(catalog.Agents.Select(a => new AgentOption(a)));
+        Toolchains = new(catalog.Toolchains.Select(t => new ToolchainOption(t)));
         _selectedOs = OperatingSystems.FirstOrDefault();
+        UpdateSupport();
         _name = SuggestName(existingNames);
         MaxCpus = Environment.ProcessorCount;
         MaxMemoryGb = Math.Max(1, (int)(GC.GetGCMemoryInfo().TotalAvailableMemoryBytes / (1024L * 1024 * 1024)));
@@ -37,6 +62,8 @@ public sealed partial class CreateMachineViewModel : ViewModelBase
     public IReadOnlyList<OsDefinition> OperatingSystems { get; }
 
     public ObservableCollection<AgentOption> Agents { get; }
+
+    public ObservableCollection<ToolchainOption> Toolchains { get; }
 
     public int MaxCpus { get; }
 
@@ -60,7 +87,8 @@ public sealed partial class CreateMachineViewModel : ViewModelBase
             (int)MemoryGb * 1024,
             (int)DiskGb,
             SelectedOs?.Id ?? "",
-            Agents.Where(a => a.IsSelected).Select(a => a.Definition.Id).ToList());
+            Agents.Where(a => a.IsSelected).Select(a => a.Definition.Id).ToList(),
+            Toolchains.Where(t => t.IsSelected).Select(t => t.Definition.Id).ToList());
 
         ErrorText = spec.Validate()
                     ?? (_existingNames.Contains(spec.Name) ? Strings.Format("NameExistsFormat", spec.Name) : null);
@@ -69,6 +97,16 @@ public sealed partial class CreateMachineViewModel : ViewModelBase
 
     [RelayCommand]
     private void Cancel() => _complete(null);
+
+    partial void OnSelectedOsChanged(OsDefinition? value) => UpdateSupport();
+
+    private void UpdateSupport()
+    {
+        foreach (var option in Agents)
+            option.IsSupported = SelectedOs is not null && option.Definition.SupportsOs(SelectedOs);
+        foreach (var option in Toolchains)
+            option.IsSupported = SelectedOs is not null && option.Definition.SupportsOs(SelectedOs);
+    }
 
     private static string SuggestName(IReadOnlySet<string> existing)
     {

@@ -51,6 +51,8 @@ A gép és a /home/agent kötet minden adata véglegesen elvész.</value></data>
   <data name="Memory" xml:space="preserve"><value>Memória</value></data>
   <data name="Disk" xml:space="preserve"><value>Tárterület</value></data>
   <data name="CodingAgents" xml:space="preserve"><value>Coding agentek</value></data>
+  <data name="DevEnvironments" xml:space="preserve"><value>Fejlesztői környezetek</value></data>
+  <data name="NotAvailableOnOs" xml:space="preserve"><value>Ezen a disztribúción nem elérhető</value></data>
   <data name="NameExistsFormat" xml:space="preserve"><value>Már létezik „{0}” nevű gép.</value></data>
   <data name="Language" xml:space="preserve"><value>Nyelv</value></data>
   <data name="Terminal" xml:space="preserve"><value>Terminál</value></data>

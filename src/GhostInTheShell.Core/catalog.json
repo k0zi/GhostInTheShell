@@ -4,29 +4,85 @@
       "id": "ubuntu-24.04",
       "displayName": "Ubuntu 24.04 LTS",
       "image": "docker.io/library/ubuntu:24.04",
-      "setup": "export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -y --no-install-recommends ca-certificates curl git sudo bash procps less nano unzip xz-utils python3 python3-venv build-essential && rm -rf /var/lib/apt/lists/*"
+      "family": "debian",
+      "setup": "export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -y --no-install-recommends ca-certificates curl git sudo bash procps less nano unzip xz-utils python3 python3-venv build-essential wget jq ripgrep fd-find tree htop vim zip openssh-client rsync git-lfs file gnupg && rm -rf /var/lib/apt/lists/* && ln -sf /usr/bin/fdfind /usr/local/bin/fd"
     },
     {
       "id": "ubuntu-26.04",
       "displayName": "Ubuntu 26.04 LTS",
       "image": "docker.io/library/ubuntu:26.04",
-      "setup": "export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -y --no-install-recommends ca-certificates curl git sudo bash procps less nano unzip xz-utils python3 python3-venv build-essential && rm -rf /var/lib/apt/lists/*"
+      "family": "debian",
+      "setup": "export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -y --no-install-recommends ca-certificates curl git sudo bash procps less nano unzip xz-utils python3 python3-venv build-essential wget jq ripgrep fd-find tree htop vim zip openssh-client rsync git-lfs file gnupg && rm -rf /var/lib/apt/lists/* && ln -sf /usr/bin/fdfind /usr/local/bin/fd"
     },
     {
       "id": "fedora-43",
       "displayName": "Fedora 43",
       "image": "registry.fedoraproject.org/fedora:43",
-      "setup": "dnf install -y --allowerasing ca-certificates curl git sudo bash procps-ng less nano unzip xz tar gzip which findutils python3 gcc gcc-c++ make && dnf clean all"
+      "family": "fedora",
+      "setup": "dnf install -y --allowerasing ca-certificates curl git sudo bash procps-ng less nano unzip xz tar gzip which findutils python3 gcc gcc-c++ make wget jq ripgrep fd-find tree htop vim-enhanced zip openssh-clients rsync git-lfs file gnupg2 && dnf clean all"
     },
     {
       "id": "manjaro",
       "displayName": "Manjaro (rolling)",
       "image": "docker.io/manjarolinux/base:latest",
-      "setup": "pacman-key --init && pacman-key --populate archlinux manjaro && pacman -Syu --noconfirm --needed ca-certificates curl git sudo bash procps-ng less nano unzip xz tar gzip which python base-devel && pacman -Scc --noconfirm"
+      "family": "arch",
+      "setup": "pacman-key --init && pacman-key --populate archlinux manjaro && pacman -Syu --noconfirm --needed ca-certificates curl git sudo bash procps-ng less nano unzip xz tar gzip which python base-devel wget jq ripgrep fd tree htop vim zip openssh rsync git-lfs file gnupg && pacman -Scc --noconfirm"
     }
   ],
   "commonSetup": [
     "arch=$(uname -m); case \"$arch\" in x86_64) arch=x64 ;; aarch64) arch=arm64 ;; esac; tarball=$(curl -fsSL https://nodejs.org/dist/latest-v24.x/SHASUMS256.txt | awk '{print $2}' | grep -E \"^node-v[0-9.]+-linux-$arch\\.tar\\.xz$\"); curl -fsSL \"https://nodejs.org/dist/latest-v24.x/$tarball\" | tar -xJ -C /usr/local --strip-components=1 --exclude=CHANGELOG.md --exclude=LICENSE --exclude=README.md && node --version && npm --version"
+  ],
+  "toolchains": [
+    {
+      "id": "cpp",
+      "displayName": "C / C++",
+      "description": "gcc, g++, clang, gdb, CMake, Ninja",
+      "root": {
+        "debian": "export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -y --no-install-recommends gcc g++ clang gdb cmake ninja-build pkg-config && rm -rf /var/lib/apt/lists/*",
+        "fedora": "dnf install -y gcc gcc-c++ clang gdb cmake ninja-build pkgconf-pkg-config && dnf clean all",
+        "arch": "pacman -Syu --noconfirm --needed gcc clang gdb cmake ninja pkgconf && pacman -Scc --noconfirm"
+      },
+      "check": "gcc --version && g++ --version && clang --version && cmake --version"
+    },
+    {
+      "id": "dotnet",
+      "displayName": ".NET",
+      "description": ".NET 10 SDK (LTS)",
+      "root": {
+        "debian": "export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -y --no-install-recommends libicu-dev && rm -rf /var/lib/apt/lists/* && curl -fsSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh && bash /tmp/dotnet-install.sh --channel 10.0 --install-dir /usr/local/share/dotnet && rm /tmp/dotnet-install.sh && ln -sf /usr/local/share/dotnet/dotnet /usr/local/bin/dotnet && printf 'export DOTNET_ROOT=/usr/local/share/dotnet\\nexport DOTNET_CLI_TELEMETRY_OPTOUT=1\\nexport PATH=\"$PATH:$HOME/.dotnet/tools\"\\n' > /etc/profile.d/gits-dotnet.sh",
+        "fedora": "dnf install -y libicu && dnf clean all && curl -fsSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh && bash /tmp/dotnet-install.sh --channel 10.0 --install-dir /usr/local/share/dotnet && rm /tmp/dotnet-install.sh && ln -sf /usr/local/share/dotnet/dotnet /usr/local/bin/dotnet && printf 'export DOTNET_ROOT=/usr/local/share/dotnet\\nexport DOTNET_CLI_TELEMETRY_OPTOUT=1\\nexport PATH=\"$PATH:$HOME/.dotnet/tools\"\\n' > /etc/profile.d/gits-dotnet.sh",
+        "arch": "pacman -Syu --noconfirm --needed icu && pacman -Scc --noconfirm && curl -fsSL https://dot.net/v1/dotnet-install.sh -o /tmp/dotnet-install.sh && bash /tmp/dotnet-install.sh --channel 10.0 --install-dir /usr/local/share/dotnet && rm /tmp/dotnet-install.sh && ln -sf /usr/local/share/dotnet/dotnet /usr/local/bin/dotnet && printf 'export DOTNET_ROOT=/usr/local/share/dotnet\\nexport DOTNET_CLI_TELEMETRY_OPTOUT=1\\nexport PATH=\"$PATH:$HOME/.dotnet/tools\"\\n' > /etc/profile.d/gits-dotnet.sh"
+      },
+      "check": "dotnet --version"
+    },
+    {
+      "id": "java",
+      "displayName": "Java",
+      "description": "OpenJDK 25 (LTS, Eclipse Temurin)",
+      "root": {
+        "*": "arch=$(uname -m); case \"$arch\" in x86_64) arch=x64 ;; esac; mkdir -p /opt/jdk && curl -fsSL \"https://api.adoptium.net/v3/binary/latest/25/ga/linux/$arch/jdk/hotspot/normal/eclipse\" | tar -xz -C /opt/jdk --strip-components=1 && ln -sf /opt/jdk/bin/* /usr/local/bin/ && echo 'export JAVA_HOME=/opt/jdk' > /etc/profile.d/gits-java.sh"
+      },
+      "check": "java -version && javac -version"
+    },
+    {
+      "id": "rust",
+      "displayName": "Rust",
+      "description": "rustup, cargo, rustc (stable)",
+      "user": "curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile default",
+      "check": "cargo --version && rustc --version"
+    },
+    {
+      "id": "python",
+      "displayName": "Python",
+      "description": "pip, venv, pipx, uv, dev headers",
+      "root": {
+        "debian": "export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -y --no-install-recommends python3-pip python3-venv python3-dev pipx && rm -rf /var/lib/apt/lists/*",
+        "fedora": "dnf install -y python3-pip python3-devel pipx && dnf clean all",
+        "arch": "pacman -Syu --noconfirm --needed python-pip python-pipx && pacman -Scc --noconfirm"
+      },
+      "user": "curl -LsSf https://astral.sh/uv/install.sh | env UV_NO_MODIFY_PATH=1 sh",
+      "check": "python3 --version && pip3 --version && uv --version"
+    }
   ],
   "agents": [
     {
@@ -54,7 +110,12 @@
       "id": "hermes",
       "displayName": "Hermes Agent",
       "description": "Nous Research Hermes Agent",
-      "install": "curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash -s -- --non-interactive --skip-browser",
+      "root": {
+        "debian": "export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -y --no-install-recommends libatomic1 && rm -rf /var/lib/apt/lists/*",
+        "fedora": "dnf install -y libatomic && dnf clean all",
+        "arch": "pacman -Syu --noconfirm --needed gcc-libs && pacman -Scc --noconfirm"
+      },
+      "install": "export npm_config_fetch_retries=5 npm_config_fetch_retry_mintimeout=20000 npm_config_fetch_retry_maxtimeout=120000 && curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash -s -- --non-interactive --skip-browser --skip-computer-use",
       "check": "hermes --version"
     },
     {
@@ -68,6 +129,7 @@
   "userPath": [
     "/home/agent/.local/bin",
     "/home/agent/.opencode/bin",
-    "/home/agent/.hermes/bin"
+    "/home/agent/.hermes/bin",
+    "/home/agent/.cargo/bin"
   ]
 }

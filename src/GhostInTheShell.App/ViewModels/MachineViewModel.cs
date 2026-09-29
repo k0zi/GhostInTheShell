@@ -24,6 +24,7 @@ public sealed partial class MachineViewModel : ViewModelBase
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(Id), nameof(Name), nameof(State), nameof(OsName), nameof(AgentNames), nameof(HasAgents),
+        nameof(ToolchainNames), nameof(HasToolchains),
         nameof(ResourcesText), nameof(UsageText), nameof(IsOverDiskLimit), nameof(IsRunning), nameof(IsStopped),
         nameof(IsCreating), nameof(IsFailed), nameof(StateText), nameof(CanStart), nameof(CanStop), nameof(CanOpenTerminal),
         nameof(CanDelete))]
@@ -55,6 +56,11 @@ public sealed partial class MachineViewModel : ViewModelBase
         Info.Spec.AgentIds.Select(id => _catalog.Agents.FirstOrDefault(a => a.Id == id)?.DisplayName ?? id).ToList();
 
     public bool HasAgents => Info.Spec.AgentIds.Count > 0;
+
+    public IReadOnlyList<string> ToolchainNames =>
+        Info.Spec.ToolchainIds.Select(id => _catalog.Toolchains.FirstOrDefault(t => t.Id == id)?.DisplayName ?? id).ToList();
+
+    public bool HasToolchains => Info.Spec.ToolchainIds.Count > 0;
 
     public string ResourcesText =>
         Strings.Format("ResourcesFormat", Info.Spec.Cpus, Info.Spec.MemoryMb / 1024.0, Info.Spec.DiskGb);

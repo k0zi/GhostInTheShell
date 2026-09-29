@@ -18,10 +18,10 @@ public class VmSpecTests
     [Fact]
     public void Validate_reports_resource_problems()
     {
-        Assert.Null(new VmSpec("ok", 1, 1024, 10, "manjaro", []).Validate());
-        Assert.NotNull(new VmSpec("ok", 0, 1024, 10, "manjaro", []).Validate());
-        Assert.NotNull(new VmSpec("ok", 1, 100, 10, "manjaro", []).Validate());
-        Assert.NotNull(new VmSpec("ok", 1, 1024, 0, "manjaro", []).Validate());
-        Assert.NotNull(new VmSpec("ok", 1, 1024, 10, "", []).Validate());
+        Assert.Null(new VmSpec("ok", 1, 1024, 10, "manjaro", [], []).Validate());
+        Assert.NotNull(new VmSpec("ok", 0, 1024, 10, "manjaro", [], []).Validate());
+        Assert.NotNull(new VmSpec("ok", 1, 100, 10, "manjaro", [], []).Validate());
+        Assert.NotNull(new VmSpec("ok", 1, 1024, 0, "manjaro", [], []).Validate());
+        Assert.NotNull(new VmSpec("ok", 1, 1024, 10, "", [], []).Validate());
     }
 }

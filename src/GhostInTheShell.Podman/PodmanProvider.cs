@@ -140,7 +140,7 @@ public sealed class PodmanProvider(Core.Catalog.Catalog catalog, PodmanCli? cli 
 
     private async Task<string> BuildImageAsync(VmSpec spec, IProgress<string> log, CancellationToken ct)
     {
-        var containerfile = ContainerfileBuilder.Build(catalog, spec.OsId, spec.AgentIds);
+        var containerfile = ContainerfileBuilder.Build(catalog, spec.OsId, spec.AgentIds, spec.ToolchainIds);
         var tag = ContainerfileBuilder.ImageTag(spec.OsId, containerfile);
 
         if ((await _cli.TryRunAsync(["image", "exists", tag], ct)).ExitCode == 0)
@@ -178,6 +178,7 @@ public sealed class PodmanProvider(Core.Catalog.Catalog catalog, PodmanCli? cli 
         "--label", $"{PodmanLabels.Name}={spec.Name}",
         "--label", $"{PodmanLabels.Os}={spec.OsId}",
         "--label", $"{PodmanLabels.Agents}={string.Join(',', spec.AgentIds)}",
+        "--label", $"{PodmanLabels.Toolchains}={string.Join(',', spec.ToolchainIds)}",
         "--label", $"{PodmanLabels.Cpus}={spec.Cpus.ToString(CultureInfo.InvariantCulture)}",
         "--label", $"{PodmanLabels.MemoryMb}={spec.MemoryMb.ToString(CultureInfo.InvariantCulture)}",
         "--label", $"{PodmanLabels.DiskGb}={spec.DiskGb.ToString(CultureInfo.InvariantCulture)}",

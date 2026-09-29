@@ -26,8 +26,9 @@ internal static class PodmanParser
                 Int(labels, PodmanLabels.MemoryMb),
                 Int(labels, PodmanLabels.DiskGb),
                 labels.GetValueOrDefault(PodmanLabels.Os, ""),
-                labels.GetValueOrDefault(PodmanLabels.Agents, "")
-                    .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+                List(labels, PodmanLabels.Agents),
+                // Machines made before toolchains existed have no such label.
+                List(labels, PodmanLabels.Toolchains));
 
             var containerName = c.GetProperty("Names")[0].GetString()!;
             var state = MapState(c.TryGetProperty("State", out var s) ? s.GetString() : null);
@@ -78,6 +79,9 @@ internal static class PodmanParser
 
         return result;
     }
+
+    private static string[] List(Dictionary<string, string> labels, string key) =>
+        labels.GetValueOrDefault(key, "").Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
     private static int Int(Dictionary<string, string> labels, string key) =>
         labels.TryGetValue(key, out var v) && int.TryParse(v, CultureInfo.InvariantCulture, out var i) ? i : 0;

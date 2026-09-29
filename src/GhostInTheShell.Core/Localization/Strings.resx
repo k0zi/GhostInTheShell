@@ -51,6 +51,8 @@ The machine and all data in its /home/agent volume will be lost permanently.</va
   <data name="Memory" xml:space="preserve"><value>Memory</value></data>
   <data name="Disk" xml:space="preserve"><value>Disk</value></data>
   <data name="CodingAgents" xml:space="preserve"><value>Coding agents</value></data>
+  <data name="DevEnvironments" xml:space="preserve"><value>Development environments</value></data>
+  <data name="NotAvailableOnOs" xml:space="preserve"><value>Not available on this distribution</value></data>
   <data name="NameExistsFormat" xml:space="preserve"><value>A machine named “{0}” already exists.</value></data>
   <data name="Language" xml:space="preserve"><value>Language</value></data>
   <data name="Terminal" xml:space="preserve"><value>Terminal</value></data>

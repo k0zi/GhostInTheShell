@@ -8,7 +8,7 @@ Built with [Avalonia 12](https://avaloniaui.net/) and [SukiUI](https://github.co
 
 ## Features
 
-- **Create a machine**: pick a name, Linux distribution, CPU cores, memory, disk size and the coding agents to install. The build log streams into the machine's card, and you can cancel the build.
+- **Create a machine**: pick a name, Linux distribution, CPU cores, memory, disk size, the coding agents and the development environments to install. The build log streams into the machine's card, and you can cancel the build.
 - **Start / stop / delete**: deleting asks for confirmation and removes the machine together with its home volume.
 - **Open a terminal**: double-click a running machine's card (or use its terminal button) to open a login shell as the `agent` user in your terminal emulator (Ptyxis, GNOME Terminal, Konsole, kitty, Alacritty, Ghostty, WezTerm, xterm, and others).
 - **Live status**: the list follows `podman events`, so it also picks up changes you make with the `podman` CLI.
@@ -34,10 +34,20 @@ Built with [Avalonia 12](https://avaloniaui.net/) and [SukiUI](https://github.co
 | [Claude Code](https://claude.com/claude-code) | `curl -fsSL https://claude.ai/install.sh \| bash` |
 | [Codex](https://github.com/openai/codex) | `npm install -g @openai/codex` |
 | [pi](https://pi.dev) | `npm install -g @earendil-works/pi-coding-agent` |
-| [Hermes Agent](https://github.com/NousResearch/hermes-agent) | official install script (`--non-interactive`) |
+| [Hermes Agent](https://github.com/NousResearch/hermes-agent) | official install script (`--non-interactive`); pulls in `libatomic` for its bundled Node.js |
 | [OpenCode](https://opencode.ai) | `curl -fsSL https://opencode.ai/install \| bash` |
 
-Every machine gets Node.js 24 LTS, git, Python 3, build tools, and a passwordless-sudo `agent` user.
+### Development environments
+
+| Option | Installs |
+|---|---|
+| C / C++ | gcc, g++, clang, gdb, CMake, Ninja, pkg-config (distro packages) |
+| .NET | .NET 10 SDK (LTS) via `dotnet-install.sh` into `/usr/local/share/dotnet` |
+| Java | OpenJDK 25 (LTS, Eclipse Temurin build) into `/opt/jdk`, `JAVA_HOME` set |
+| Rust | stable toolchain via `rustup` (cargo, rustc, clippy, rustfmt) |
+| Python | pip, venv, pipx, dev headers (distro packages) and [uv](https://docs.astral.sh/uv/) |
+
+Every machine gets Node.js 24 LTS, Python 3, build tools, a passwordless-sudo `agent` user, and these developer tools: git, git-lfs, curl, wget, jq, ripgrep (`rg`), fd, tree, htop, vim, nano, zip/unzip, rsync, an SSH client and gnupg.
 
 ## Requirements
 
@@ -101,11 +111,20 @@ Install scripts change. To fix or extend them without rebuilding the app, copy [
 {
   "operatingSystems": [
     { "id": "debian-13", "displayName": "Debian 13", "image": "docker.io/library/debian:13",
+      "family": "debian",                  // picks each toolchain's install command
       "setup": "apt-get update && apt-get install -y curl git sudo ..." }
   ],
   "commonSetup": [ "..." ],               // root commands run on every distro (Node.js install)
+  "toolchains": [
+    { "id": "go", "displayName": "Go", "description": "...",
+      "root": { "debian": "apt-get update && apt-get install -y golang",   // per family, as root
+                "*": "..." },                                               // fallback for any family
+      "user": "...",                                                        // optional, as the agent user
+      "check": "go version" }
+  ],
   "agents": [
     { "id": "myagent", "displayName": "My Agent", "description": "...",
+      "root": { "fedora": "dnf install -y libatomic" },                  // optional: root prerequisites, only when selected
       "install": "curl -fsSL https://example.com/install.sh | bash",   // runs as the agent user
       "check": "myagent --version" }                                    // fails the build if the install broke
   ],

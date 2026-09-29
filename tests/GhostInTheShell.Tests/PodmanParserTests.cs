@@ -16,7 +16,7 @@ public class PodmanParserTests
             "Created": 1786531075,
             "Labels": {
               "gits.managed": "true", "gits.name": "ghost-1", "gits.os": "fedora-43",
-              "gits.agents": "claude,opencode", "gits.cpus": "2", "gits.memory-mb": "4096", "gits.disk-gb": "20"
+              "gits.agents": "claude,opencode", "gits.toolchains": "rust,python", "gits.cpus": "2", "gits.memory-mb": "4096", "gits.disk-gb": "20"
             },
             "Size": { "rootFsSize": 900, "rwSize": 1234 }
           },
@@ -45,12 +45,14 @@ public class PodmanParserTests
         var first = machines[0];
         Assert.Equal("gits-ghost-1", first.Id);
         Assert.Equal(VmState.Running, first.State);
-        Assert.Equal(new VmSpec("ghost-1", 2, 4096, 20, "fedora-43", ["claude", "opencode"]) with { AgentIds = first.Spec.AgentIds }, first.Spec);
+        Assert.Equal(new VmSpec("ghost-1", 2, 4096, 20, "fedora-43", [], []) with { AgentIds = first.Spec.AgentIds, ToolchainIds = first.Spec.ToolchainIds }, first.Spec);
         Assert.Equal(["claude", "opencode"], first.Spec.AgentIds);
+        Assert.Equal(["rust", "python"], first.Spec.ToolchainIds);
         Assert.Equal(1234, first.DiskUsedBytes);
 
         Assert.Equal(VmState.Stopped, machines[1].State);
         Assert.Empty(machines[1].Spec.AgentIds);
+        Assert.Empty(machines[1].Spec.ToolchainIds); // made before toolchains existed: no label
         Assert.Null(machines[1].DiskUsedBytes);
     }
 
@@ -98,7 +100,7 @@ public class PodmanParserTests
     [Fact]
     public void Create_args_carry_limits_and_labels()
     {
-        var args = PodmanProvider.BuildCreateArgs(new VmSpec("ghost-1", 3, 2048, 15, "manjaro", ["pi"]), "img:tag");
+        var args = PodmanProvider.BuildCreateArgs(new VmSpec("ghost-1", 3, 2048, 15, "manjaro", ["pi"], ["rust", "java"]), "img:tag");
 
         Assert.Equal("create", args[0]);
         Assert.Equal("img:tag", args[^1]);
@@ -106,6 +108,7 @@ public class PodmanParserTests
         Assert.Equal("2048m", args[args.IndexOf("--memory") + 1]);
         Assert.Equal("gits-ghost-1-home:/home/agent", args[args.IndexOf("-v") + 1]);
         Assert.Contains("gits.agents=pi", args);
+        Assert.Contains("gits.toolchains=rust,java", args);
         Assert.Contains("gits.disk-gb=15", args);
     }
 }
