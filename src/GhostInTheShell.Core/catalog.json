@@ -37,6 +37,13 @@
       "check": "claude --version"
     },
     {
+      "id": "codex",
+      "displayName": "Codex",
+      "description": "OpenAI Codex CLI",
+      "install": "npm install -g --prefix \"$HOME/.local\" @openai/codex",
+      "check": "codex --version"
+    },
+    {
       "id": "pi",
       "displayName": "pi",
       "description": "pi.dev coding agent",

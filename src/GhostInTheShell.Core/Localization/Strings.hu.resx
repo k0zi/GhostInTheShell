@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="AppSubtitle" xml:space="preserve"><value>Izolált Linux környezetek coding agentekhez</value></data>
+  <data name="Machines" xml:space="preserve"><value>Gépek</value></data>
+  <data name="NewMachine" xml:space="preserve"><value>Új gép</value></data>
+  <data name="Refresh" xml:space="preserve"><value>Frissítés</value></data>
+  <data name="ToggleTheme" xml:space="preserve"><value>Téma váltása</value></data>
+  <data name="Settings" xml:space="preserve"><value>Beállítások</value></data>
+  <data name="BackendUnavailable" xml:space="preserve"><value>A backend nem érhető el</value></data>
+  <data name="Note" xml:space="preserve"><value>Megjegyzés</value></data>
+  <data name="NoMachines" xml:space="preserve"><value>Még nincs egy gép sem.</value></data>
+  <data name="CreateFirstMachine" xml:space="preserve"><value>Első gép létrehozása</value></data>
+  <data name="OpenTerminal" xml:space="preserve"><value>Terminál megnyitása (vagy dupla kattintás a kártyán)</value></data>
+  <data name="Start" xml:space="preserve"><value>Indítás</value></data>
+  <data name="Stop" xml:space="preserve"><value>Leállítás</value></data>
+  <data name="Log" xml:space="preserve"><value>Napló</value></data>
+  <data name="Abort" xml:space="preserve"><value>Megszakítás</value></data>
+  <data name="Dismiss" xml:space="preserve"><value>Elvetés</value></data>
+  <data name="Delete" xml:space="preserve"><value>Törlés</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Mégse</value></data>
+  <data name="Save" xml:space="preserve"><value>Mentés</value></data>
+  <data name="Create" xml:space="preserve"><value>Létrehozás</value></data>
+  <data name="StateCreating" xml:space="preserve"><value>Létrehozás…</value></data>
+  <data name="StateRunning" xml:space="preserve"><value>Fut</value></data>
+  <data name="StateStopped" xml:space="preserve"><value>Leállítva</value></data>
+  <data name="StateFailed" xml:space="preserve"><value>Sikertelen</value></data>
+  <data name="StateError" xml:space="preserve"><value>Hiba</value></data>
+  <data name="ResourcesFormat" xml:space="preserve"><value>{0} CPU · {1:0.#} GB RAM · {2} GB tár</value></data>
+  <data name="UsageFormat" xml:space="preserve"><value>Foglalt: {0:0.00} / {1} GB</value></data>
+  <data name="ListFailed" xml:space="preserve"><value>Nem sikerült lekérdezni a gépeket</value></data>
+  <data name="MachineCreated" xml:space="preserve"><value>Gép létrehozva</value></data>
+  <data name="MachineRunningFormat" xml:space="preserve"><value>{0} fut.</value></data>
+  <data name="CreateCancelled" xml:space="preserve"><value>Létrehozás megszakítva</value></data>
+  <data name="CreateFailedFormat" xml:space="preserve"><value>{0} létrehozása sikertelen</value></data>
+  <data name="StartFailedFormat" xml:space="preserve"><value>{0} indítása sikertelen</value></data>
+  <data name="StopFailedFormat" xml:space="preserve"><value>{0} leállítása sikertelen</value></data>
+  <data name="DeleteFailedFormat" xml:space="preserve"><value>{0} törlése sikertelen</value></data>
+  <data name="DeleteMachine" xml:space="preserve"><value>Gép törlése</value></data>
+  <data name="DeleteConfirmFormat" xml:space="preserve"><value>Biztosan törlöd a(z) „{0}” gépet?
+
+A gép és a /home/agent kötet minden adata véglegesen elvész.</value></data>
+  <data name="TerminalFailed" xml:space="preserve"><value>Nem sikerült terminált nyitni (Beállítások → parancssablon)</value></data>
+  <data name="Name" xml:space="preserve"><value>Név</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>pl. claude-sandbox</value></data>
+  <data name="OperatingSystem" xml:space="preserve"><value>Operációs rendszer</value></data>
+  <data name="CpuCores" xml:space="preserve"><value>CPU magok</value></data>
+  <data name="Memory" xml:space="preserve"><value>Memória</value></data>
+  <data name="Disk" xml:space="preserve"><value>Tárterület</value></data>
+  <data name="CodingAgents" xml:space="preserve"><value>Coding agentek</value></data>
+  <data name="NameExistsFormat" xml:space="preserve"><value>Már létezik „{0}” nevű gép.</value></data>
+  <data name="Language" xml:space="preserve"><value>Nyelv</value></data>
+  <data name="Terminal" xml:space="preserve"><value>Terminál</value></data>
+  <data name="TerminalPresetPlaceholder" xml:space="preserve"><value>Előre beállított terminál…</value></data>
+  <data name="CommandTemplate" xml:space="preserve"><value>Parancssablon</value></data>
+  <data name="CommandTemplateHint" xml:space="preserve"><value>A {cmd} helyére kerül a gépbe belépő parancs (podman exec …).</value></data>
+  <data name="TemplateMissingTokenFormat" xml:space="preserve"><value>A sablonnak tartalmaznia kell a {0} helyőrzőt.</value></data>
+  <data name="TemplateEmpty" xml:space="preserve"><value>Üres terminál sablon.</value></data>
+  <data name="NameInvalid" xml:space="preserve"><value>A név 2–31 karakter: kisbetű, szám és kötőjel, betűvel vagy számmal kezdve.</value></data>
+  <data name="CpuMin" xml:space="preserve"><value>Legalább 1 CPU mag kell.</value></data>
+  <data name="MemoryMin" xml:space="preserve"><value>Legalább 256 MB memória kell.</value></data>
+  <data name="DiskMin" xml:space="preserve"><value>Legalább 1 GB tárterület kell.</value></data>
+  <data name="OsRequired" xml:space="preserve"><value>Válassz operációs rendszert.</value></data>
+  <data name="PodmanNotFoundFormat" xml:space="preserve"><value>A podman nem található. Telepítsd: sudo apt install podman ({0})</value></data>
+  <data name="PodmanNotWorkingFormat" xml:space="preserve"><value>A podman nem működik: {0}</value></data>
+  <data name="PodmanStartFailedFormat" xml:space="preserve"><value>A podman nem indítható ({0}): {1}</value></data>
+  <data name="ExitCodeFormat" xml:space="preserve"><value>kilépési kód {0}</value></data>
+  <data name="DiskQuotaNotEnforceable" xml:space="preserve"><value>A tárterület-limit ezen a gépen nem kényszeríthető (rootless podman / nem XFS tároló) — a használat figyelve van, túllépéskor piros jelzést kapsz.</value></data>
+  <data name="MachineExistsFormat" xml:space="preserve"><value>Már létezik gép ezzel a névvel: {0}</value></data>
+  <data name="LogCreatingVolumeFormat" xml:space="preserve"><value>» Kötet létrehozása: {0}</value></data>
+  <data name="LogCreatingContainerFormat" xml:space="preserve"><value>» Konténer létrehozása: {0}</value></data>
+  <data name="LogQuotaNotEnforced" xml:space="preserve"><value>  (a tárterület-limit nem kényszeríthető ezen a tárolón, csak figyelve lesz)</value></data>
+  <data name="LogStarting" xml:space="preserve"><value>» Indítás</value></data>
+  <data name="LogDone" xml:space="preserve"><value>✓ Kész</value></data>
+  <data name="LogCachedImageFormat" xml:space="preserve"><value>» Gyorsítótárazott image: {0}</value></data>
+  <data name="LogBuildingImageFormat" xml:space="preserve"><value>» Image építése: {0}</value></data>
+</root>

@@ -1,28 +1,32 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:GhostInTheShell.App.ViewModels"
+             xmlns:l="using:GhostInTheShell.App.Localization"
              x:Class="GhostInTheShell.App.Views.SettingsView"
              x:DataType="vm:SettingsViewModel"
              Width="480">
     <StackPanel Spacing="14">
         <StackPanel Spacing="4">
-            <TextBlock Text="Terminál" FontWeight="SemiBold" />
-            <ComboBox ItemsSource="{Binding Presets}" SelectedItem="{Binding SelectedPreset}"
-                      PlaceholderText="Előre beállított terminál…" HorizontalAlignment="Stretch" />
+            <TextBlock Text="{l:Tr Language}" FontWeight="SemiBold" />
+            <ComboBox ItemsSource="{Binding Languages}" SelectedItem="{Binding SelectedLanguage}" HorizontalAlignment="Stretch" />
         </StackPanel>
         <StackPanel Spacing="4">
-            <TextBlock Text="Parancssablon" FontWeight="SemiBold" />
+            <TextBlock Text="{l:Tr Terminal}" FontWeight="SemiBold" />
+            <ComboBox ItemsSource="{Binding Presets}" SelectedItem="{Binding SelectedPreset}"
+                      PlaceholderText="{l:Tr TerminalPresetPlaceholder}" HorizontalAlignment="Stretch" />
+        </StackPanel>
+        <StackPanel Spacing="4">
+            <TextBlock Text="{l:Tr CommandTemplate}" FontWeight="SemiBold" />
             <TextBox Text="{Binding TerminalTemplate}" FontFamily="monospace" />
-            <TextBlock Opacity="0.6" TextWrapping="Wrap" FontSize="12"
-                       Text="A {cmd} helyére kerül a gépbe belépő parancs (podman exec …)." />
+            <TextBlock Opacity="0.6" TextWrapping="Wrap" FontSize="12" Text="{l:Tr CommandTemplateHint}" />
         </StackPanel>
 
         <TextBlock Text="{Binding ErrorText}" Foreground="#EF4444" TextWrapping="Wrap"
                    IsVisible="{Binding ErrorText, Converter={x:Static ObjectConverters.IsNotNull}}" />
 
         <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
-            <Button Content="Mégse" Command="{Binding CancelCommand}" />
-            <Button Classes="Flat" Content="Mentés" Command="{Binding SaveCommand}" IsDefault="True" />
+            <Button Content="{l:Tr Cancel}" Command="{Binding CancelCommand}" />
+            <Button Classes="Flat" Content="{l:Tr Save}" Command="{Binding SaveCommand}" IsDefault="True" />
         </StackPanel>
     </StackPanel>
 </UserControl>

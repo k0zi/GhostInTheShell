@@ -1,4 +1,5 @@
 using System.Text.RegularExpressions;
+using GhostInTheShell.Core.Localization;
 
 namespace GhostInTheShell.Core.Models;
 
@@ -17,11 +18,11 @@ public sealed partial record VmSpec(
     public string? Validate()
     {
         if (!IsValidName(Name))
-            return "A név 2–31 karakter: kisbetű, szám és kötőjel, betűvel vagy számmal kezdve.";
-        if (Cpus < 1) return "Legalább 1 CPU mag kell.";
-        if (MemoryMb < 256) return "Legalább 256 MB memória kell.";
-        if (DiskGb < 1) return "Legalább 1 GB tárterület kell.";
-        if (string.IsNullOrWhiteSpace(OsId)) return "Válassz operációs rendszert.";
+            return Strings.Get("NameInvalid");
+        if (Cpus < 1) return Strings.Get("CpuMin");
+        if (MemoryMb < 256) return Strings.Get("MemoryMin");
+        if (DiskGb < 1) return Strings.Get("DiskMin");
+        if (string.IsNullOrWhiteSpace(OsId)) return Strings.Get("OsRequired");
         return null;
     }
 

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text;
+using GhostInTheShell.Core.Localization;
 
 namespace GhostInTheShell.App.Services;
 
@@ -42,9 +43,9 @@ public static class TerminalLauncher
     public static List<string> Expand(string template, ProcessStartInfo shell)
     {
         var tokens = Tokenize(template);
-        if (tokens.Count == 0) throw new ArgumentException("Üres terminál sablon.");
+        if (tokens.Count == 0) throw new ArgumentException(Strings.Get("TemplateEmpty"));
         if (!tokens.Contains(CommandToken))
-            throw new ArgumentException($"A terminál sablonból hiányzik a {CommandToken} helyőrző.");
+            throw new ArgumentException(Strings.Format("TemplateMissingTokenFormat", CommandToken));
 
         var cmd = new List<string> { shell.FileName };
         cmd.AddRange(shell.ArgumentList);

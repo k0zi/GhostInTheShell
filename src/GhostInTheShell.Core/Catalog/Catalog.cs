@@ -18,9 +18,9 @@ public sealed record Catalog(
 {
     public OsDefinition GetOs(string id) =>
         OperatingSystems.FirstOrDefault(o => o.Id == id)
-        ?? throw new KeyNotFoundException($"Ismeretlen operációs rendszer: {id}");
+        ?? throw new KeyNotFoundException($"Unknown operating system: {id}");
 
     public AgentDefinition GetAgent(string id) =>
         Agents.FirstOrDefault(a => a.Id == id)
-        ?? throw new KeyNotFoundException($"Ismeretlen agent: {id}");
+        ?? throw new KeyNotFoundException($"Unknown agent: {id}");
 }

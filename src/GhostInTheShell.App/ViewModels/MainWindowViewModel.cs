@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.Input;
 using GhostInTheShell.App.Services;
 using GhostInTheShell.Core;
 using GhostInTheShell.Core.Catalog;
+using GhostInTheShell.Core.Localization;
 using GhostInTheShell.Core.Models;
 using SukiUI;
 using SukiUI.Dialogs;
@@ -25,6 +26,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private readonly DispatcherTimer _refreshDebounce;
     private readonly SemaphoreSlim _refreshLock = new(1, 1);
     private DateTimeOffset _lastDiskUsage = DateTimeOffset.MinValue;
+    private CancellationToken _appLifetime;
 
     public MainWindowViewModel(IVmProvider provider, Catalog catalog, SettingsService settings, DialogService dialogs,
         ISukiDialogManager dialogManager, ISukiToastManager toastManager)
@@ -52,6 +54,13 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         var usageTimer = new DispatcherTimer { Interval = DiskUsageInterval };
         usageTimer.Tick += async (_, _) => await RefreshAsync(includeDiskUsage: true);
         usageTimer.Start();
+
+        Strings.LanguageChanged += async (_, _) =>
+        {
+            foreach (var card in Machines) card.RefreshTexts();
+            // Provider messages are produced in the language that was active when they were made.
+            await CheckHealthAsync();
+        };
     }
 
     public ISukiDialogManager DialogManager { get; }
@@ -73,18 +82,24 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     public async Task InitializeAsync(CancellationToken appLifetime)
     {
-        var health = await _provider.CheckAsync(appLifetime);
-        BackendText = health.Version is null ? _provider.DisplayName : $"{_provider.DisplayName} {health.Version}";
-        if (!health.IsAvailable)
+        _appLifetime = appLifetime;
+        if (!await CheckHealthAsync())
         {
-            BackendError = string.Join('\n', health.Warnings);
             IsLoading = false;
             return;
         }
 
-        BackendWarning = health.Warnings.Count > 0 ? string.Join('\n', health.Warnings) : null;
         await RefreshAsync(includeDiskUsage: true);
         _provider.StartWatching(appLifetime);
+    }
+
+    private async Task<bool> CheckHealthAsync()
+    {
+        var health = await _provider.CheckAsync(_appLifetime);
+        BackendText = health.Version is null ? _provider.DisplayName : $"{_provider.DisplayName} {health.Version}";
+        BackendError = health.IsAvailable ? null : string.Join('\n', health.Warnings);
+        BackendWarning = health.IsAvailable && health.Warnings.Count > 0 ? string.Join('\n', health.Warnings) : null;
+        return health.IsAvailable;
     }
 
     [RelayCommand]
@@ -105,7 +120,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            ShowError("Nem sikerült lekérdezni a gépeket", ex);
+            ShowError(Strings.Get("ListFailed"), ex);
         }
         finally
         {
@@ -147,7 +162,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private async Task NewMachine()
     {
         var names = Machines.Select(m => m.Name).ToHashSet();
-        var spec = await _dialogs.ShowAsync<VmSpec?>("Új gép", null,
+        var spec = await _dialogs.ShowAsync<VmSpec?>(Strings.Get("NewMachine"), null,
             complete => new CreateMachineViewModel(_catalog, names, complete));
         if (spec is null) return;
 
@@ -161,19 +176,19 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         {
             await _provider.CreateAsync(spec, new Progress<string>(card.AppendLog), cts.Token);
             Machines.Remove(card);
-            ShowToast(NotificationType.Success, "Gép létrehozva", $"{spec.Name} fut.");
+            ShowToast(NotificationType.Success, Strings.Get("MachineCreated"), Strings.Format("MachineRunningFormat", spec.Name));
         }
         catch (OperationCanceledException)
         {
             Machines.Remove(card);
-            ShowToast(NotificationType.Information, "Létrehozás megszakítva", spec.Name);
+            ShowToast(NotificationType.Information, Strings.Get("CreateCancelled"), spec.Name);
         }
         catch (Exception ex)
         {
             // Keep the failed card with its log so the user can see what went wrong.
             card.Error = ex.Message;
             card.AppendLog($"✗ {ex.Message}");
-            ShowError($"{spec.Name} létrehozása sikertelen", ex);
+            ShowError(Strings.Format("CreateFailedFormat", spec.Name), ex);
         }
         finally
         {
@@ -200,21 +215,21 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private static void ToggleLog(MachineViewModel card) => card.IsLogVisible = !card.IsLogVisible;
 
     [RelayCommand]
-    private Task Start(MachineViewModel card) => RunBusy(card, "indítása", ct => _provider.StartAsync(card.Id, ct));
+    private Task Start(MachineViewModel card) => RunBusy(card, "StartFailedFormat", ct => _provider.StartAsync(card.Id, ct));
 
     [RelayCommand]
-    private Task Stop(MachineViewModel card) => RunBusy(card, "leállítása", ct => _provider.StopAsync(card.Id, ct));
+    private Task Stop(MachineViewModel card) => RunBusy(card, "StopFailedFormat", ct => _provider.StopAsync(card.Id, ct));
 
     [RelayCommand]
     private async Task Delete(MachineViewModel card)
     {
         var confirmed = await _dialogs.ConfirmAsync(
-            "Gép törlése",
-            $"Biztosan törlöd a(z) „{card.Name}” gépet?\n\nA gép és a /home/agent kötet minden adata véglegesen elvész.",
-            "Törlés");
+            Strings.Get("DeleteMachine"),
+            Strings.Format("DeleteConfirmFormat", card.Name),
+            Strings.Get("Delete"));
         if (!confirmed) return;
 
-        await RunBusy(card, "törlése", ct => _provider.DeleteAsync(card.Id, ct));
+        await RunBusy(card, "DeleteFailedFormat", ct => _provider.DeleteAsync(card.Id, ct));
     }
 
     [RelayCommand]
@@ -226,16 +241,19 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            ShowError("Nem sikerült terminált nyitni (Beállítások → terminál sablon)", ex);
+            ShowError(Strings.Get("TerminalFailed"), ex);
         }
     }
 
     [RelayCommand]
     private async Task OpenSettings()
     {
-        var template = await _dialogs.ShowAsync<string?>("Beállítások", null,
-            complete => new SettingsViewModel(TerminalTemplate, complete));
-        if (template is not null) _settings.Save(_settings.Current with { TerminalTemplate = template });
+        var result = await _dialogs.ShowAsync<SettingsResult?>(Strings.Get("Settings"), null,
+            complete => new SettingsViewModel(TerminalTemplate, Strings.Culture.Name, complete));
+        if (result is null) return;
+
+        _settings.Save(_settings.Current with { TerminalTemplate = result.TerminalTemplate, Language = result.Language });
+        Strings.SetLanguage(result.Language);
     }
 
     [RelayCommand]
@@ -248,7 +266,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     private string TerminalTemplate => _settings.Current.TerminalTemplate ?? TerminalLauncher.DetectDefaultTemplate();
 
-    private async Task RunBusy(MachineViewModel card, string action, Func<CancellationToken, Task> operation)
+    private async Task RunBusy(MachineViewModel card, string failedFormatKey, Func<CancellationToken, Task> operation)
     {
         card.IsBusy = true;
         try
@@ -257,7 +275,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            ShowError($"{card.Name} {action} sikertelen", ex);
+            ShowError(Strings.Format(failedFormatKey, card.Name), ex);
         }
         finally
         {

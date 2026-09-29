@@ -4,7 +4,8 @@ using GhostInTheShell.Core;
 
 namespace GhostInTheShell.App.Services;
 
-public sealed record AppSettings(string? TerminalTemplate = null, bool DarkTheme = true);
+/// <param name="Language">UI language code; null means English.</param>
+public sealed record AppSettings(string? TerminalTemplate = null, bool DarkTheme = true, string? Language = null);
 
 public sealed class SettingsService
 {

@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GhostInTheShell.Core.Catalog;
+using GhostInTheShell.Core.Localization;
 using GhostInTheShell.Core.Models;
 
 namespace GhostInTheShell.App.ViewModels;
@@ -62,7 +63,7 @@ public sealed partial class CreateMachineViewModel : ViewModelBase
             Agents.Where(a => a.IsSelected).Select(a => a.Definition.Id).ToList());
 
         ErrorText = spec.Validate()
-                    ?? (_existingNames.Contains(spec.Name) ? $"Már létezik „{spec.Name}” nevű gép." : null);
+                    ?? (_existingNames.Contains(spec.Name) ? Strings.Format("NameExistsFormat", spec.Name) : null);
         if (ErrorText is null) _complete(spec);
     }
 

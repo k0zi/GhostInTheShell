@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Text.Json;
 using GhostInTheShell.Core;
+using GhostInTheShell.Core.Localization;
 using GhostInTheShell.Core.Models;
 using GhostInTheShell.Core.Provisioning;
 
@@ -25,19 +26,18 @@ public sealed class PodmanProvider(Core.Catalog.Catalog catalog, PodmanCli? cli 
         }
         catch (PodmanException ex)
         {
-            return ProviderHealth.Unavailable($"A podman nem található. Telepítsd: sudo apt install podman ({ex.StdErr})");
+            return ProviderHealth.Unavailable(Strings.Format("PodmanNotFoundFormat", ex.StdErr));
         }
 
         if (result.ExitCode != 0)
-            return ProviderHealth.Unavailable($"A podman nem működik: {result.StdErr}");
+            return ProviderHealth.Unavailable(Strings.Format("PodmanNotWorkingFormat", result.StdErr));
 
         using var doc = JsonDocument.Parse(result.StdOut);
         var root = doc.RootElement;
         var version = root.GetProperty("version").GetProperty("Version").GetString();
         var warnings = new List<string>();
         if (!DiskQuotaEnforceable(root))
-            warnings.Add("A tárterület-limit ezen a gépen nem kényszeríthető (rootless podman / nem XFS tároló) — " +
-                         "a használat figyelve van, túllépéskor piros jelzést kapsz.");
+            warnings.Add(Strings.Get("DiskQuotaNotEnforceable"));
 
         return new ProviderHealth(true, version, warnings);
     }
@@ -101,29 +101,29 @@ public sealed class PodmanProvider(Core.Catalog.Catalog catalog, PodmanCli? cli 
         var containerName = PodmanLabels.ContainerName(spec.Name);
         var volumeName = PodmanLabels.HomeVolumeName(spec.Name);
         if ((await _cli.TryRunAsync(["container", "exists", containerName], ct)).ExitCode == 0)
-            throw new InvalidOperationException($"Már létezik gép ezzel a névvel: {spec.Name}");
+            throw new InvalidOperationException(Strings.Format("MachineExistsFormat", spec.Name));
 
         var image = await BuildImageAsync(spec, log, ct);
 
         var volumeCreated = false;
         try
         {
-            log.Report($"» Kötet létrehozása: {volumeName}");
+            log.Report(Strings.Format("LogCreatingVolumeFormat", volumeName));
             await _cli.RunAsync(["volume", "create", "--label", PodmanLabels.ManagedFilter, "--label", $"{PodmanLabels.Name}={spec.Name}", volumeName], ct);
             volumeCreated = true;
 
-            log.Report($"» Konténer létrehozása: {containerName}");
+            log.Report(Strings.Format("LogCreatingContainerFormat", containerName));
             var createArgs = BuildCreateArgs(spec, image);
             var withQuota = await _cli.TryRunAsync([.. createArgs.Take(1), "--storage-opt", $"size={spec.DiskGb}G", .. createArgs.Skip(1)], ct);
             if (withQuota.ExitCode != 0)
             {
-                log.Report("  (a tárterület-limit nem kényszeríthető ezen a tárolón, csak figyelve lesz)");
+                log.Report(Strings.Get("LogQuotaNotEnforced"));
                 await _cli.RunAsync(createArgs, ct);
             }
 
-            log.Report("» Indítás");
+            log.Report(Strings.Get("LogStarting"));
             await _cli.RunAsync(["start", containerName], ct);
-            log.Report("✓ Kész");
+            log.Report(Strings.Get("LogDone"));
         }
         catch
         {
@@ -145,7 +145,7 @@ public sealed class PodmanProvider(Core.Catalog.Catalog catalog, PodmanCli? cli 
 
         if ((await _cli.TryRunAsync(["image", "exists", tag], ct)).ExitCode == 0)
         {
-            log.Report($"» Gyorsítótárazott image: {tag}");
+            log.Report(Strings.Format("LogCachedImageFormat", tag));
             return tag;
         }
 
@@ -154,7 +154,7 @@ public sealed class PodmanProvider(Core.Catalog.Catalog catalog, PodmanCli? cli 
         {
             var file = Path.Combine(dir.FullName, "Containerfile");
             await File.WriteAllTextAsync(file, containerfile, ct);
-            log.Report($"» Image építése: {tag}");
+            log.Report(Strings.Format("LogBuildingImageFormat", tag));
             await _cli.StreamAsync(["build", "--layers", "--format", "docker", "-t", tag, "-f", file, dir.FullName], log.Report, ct);
             return tag;
         }

@@ -21,13 +21,13 @@ public static class CatalogLoader
     public static Catalog LoadDefault()
     {
         using var stream = typeof(CatalogLoader).Assembly.GetManifestResourceStream("GhostInTheShell.Core.catalog.json")
-                           ?? throw new InvalidOperationException("A beépített catalog.json hiányzik.");
+                           ?? throw new InvalidOperationException("The built-in catalog.json is missing.");
         return Parse(stream);
     }
 
     public static Catalog Parse(Stream json) =>
         JsonSerializer.Deserialize(json, CatalogJsonContext.Default.Catalog)
-        ?? throw new InvalidDataException("Üres katalógus.");
+        ?? throw new InvalidDataException("The catalog is empty.");
 }
 
 [JsonSourceGenerationOptions(

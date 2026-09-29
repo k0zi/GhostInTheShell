@@ -15,7 +15,7 @@ public sealed class ViewLocator : IDataTemplate
         var name = param.GetType().FullName!.Replace("ViewModel", "View", StringComparison.Ordinal);
         var type = param.GetType().Assembly.GetType(name);
         return type is null
-            ? new TextBlock { Text = "Nem található nézet: " + name }
+            ? new TextBlock { Text = "View not found: " + name }
             : (Control)Activator.CreateInstance(type)!;
     }
 

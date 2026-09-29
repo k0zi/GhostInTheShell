@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Text;
+using GhostInTheShell.Core.Localization;
 
 namespace GhostInTheShell.Podman;
 
@@ -65,7 +66,7 @@ public class PodmanCli(string executable = "podman")
         }
         catch (System.ComponentModel.Win32Exception ex)
         {
-            throw new PodmanException($"A podman nem indítható ({Executable}): {ex.Message}", -1, ex.Message);
+            throw new PodmanException(Strings.Format("PodmanStartFailedFormat", Executable, ex.Message), -1, ex.Message);
         }
 
         process.StandardInput.Close();
@@ -91,7 +92,7 @@ public class PodmanCli(string executable = "podman")
     private static PodmanException Failure(IEnumerable<string> args, int exit, string stderr)
     {
         var verb = string.Join(' ', args.Take(2));
-        var detail = string.IsNullOrWhiteSpace(stderr) ? $"kilépési kód {exit}" : stderr;
+        var detail = string.IsNullOrWhiteSpace(stderr) ? Strings.Format("ExitCodeFormat", exit) : stderr;
         return new PodmanException($"podman {verb}: {detail}", exit, stderr);
     }
 }

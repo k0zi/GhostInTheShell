@@ -2,17 +2,18 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:GhostInTheShell.App.ViewModels"
              xmlns:catalog="using:GhostInTheShell.Core.Catalog"
+             xmlns:l="using:GhostInTheShell.App.Localization"
              x:Class="GhostInTheShell.App.Views.CreateMachineView"
              x:DataType="vm:CreateMachineViewModel"
              Width="460">
     <StackPanel Spacing="14">
         <StackPanel Spacing="4">
-            <TextBlock Text="Név" FontWeight="SemiBold" />
-            <TextBox Text="{Binding Name}" PlaceholderText="pl. claude-sandbox" />
+            <TextBlock Text="{l:Tr Name}" FontWeight="SemiBold" />
+            <TextBox Text="{Binding Name}" PlaceholderText="{l:Tr NamePlaceholder}" />
         </StackPanel>
 
         <StackPanel Spacing="4">
-            <TextBlock Text="Operációs rendszer" FontWeight="SemiBold" />
+            <TextBlock Text="{l:Tr OperatingSystem}" FontWeight="SemiBold" />
             <ComboBox ItemsSource="{Binding OperatingSystems}" SelectedItem="{Binding SelectedOs}" HorizontalAlignment="Stretch">
                 <ComboBox.ItemTemplate>
                     <DataTemplate x:DataType="catalog:OsDefinition">
@@ -23,28 +24,28 @@
         </StackPanel>
 
         <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
-            <TextBlock Text="CPU magok" FontWeight="SemiBold" />
+            <TextBlock Text="{l:Tr CpuCores}" FontWeight="SemiBold" />
             <TextBlock Grid.Column="1" Text="{Binding Cpus, StringFormat='{}{0:0}'}" />
             <Slider Grid.Row="1" Grid.ColumnSpan="2" Minimum="1" Maximum="{Binding MaxCpus}"
                     Value="{Binding Cpus}" TickFrequency="1" IsSnapToTickEnabled="True" />
         </Grid>
 
         <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
-            <TextBlock Text="Memória" FontWeight="SemiBold" />
+            <TextBlock Text="{l:Tr Memory}" FontWeight="SemiBold" />
             <TextBlock Grid.Column="1" Text="{Binding MemoryGb, StringFormat='{}{0:0} GB'}" />
             <Slider Grid.Row="1" Grid.ColumnSpan="2" Minimum="1" Maximum="{Binding MaxMemoryGb}"
                     Value="{Binding MemoryGb}" TickFrequency="1" IsSnapToTickEnabled="True" />
         </Grid>
 
         <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
-            <TextBlock Text="Tárterület" FontWeight="SemiBold" />
+            <TextBlock Text="{l:Tr Disk}" FontWeight="SemiBold" />
             <TextBlock Grid.Column="1" Text="{Binding DiskGb, StringFormat='{}{0:0} GB'}" />
             <Slider Grid.Row="1" Grid.ColumnSpan="2" Minimum="5" Maximum="{Binding MaxDiskGb}"
                     Value="{Binding DiskGb}" TickFrequency="5" IsSnapToTickEnabled="True" />
         </Grid>
 
         <StackPanel Spacing="6">
-            <TextBlock Text="Coding agentek" FontWeight="SemiBold" />
+            <TextBlock Text="{l:Tr CodingAgents}" FontWeight="SemiBold" />
             <ItemsControl ItemsSource="{Binding Agents}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="vm:AgentOption">
@@ -63,8 +64,8 @@
                    IsVisible="{Binding ErrorText, Converter={x:Static ObjectConverters.IsNotNull}}" />
 
         <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
-            <Button Content="Mégse" Command="{Binding CancelCommand}" />
-            <Button Classes="Flat" Content="Létrehozás" Command="{Binding CreateCommand}" IsDefault="True" />
+            <Button Content="{l:Tr Cancel}" Command="{Binding CancelCommand}" />
+            <Button Classes="Flat" Content="{l:Tr Create}" Command="{Binding CreateCommand}" IsDefault="True" />
         </StackPanel>
     </StackPanel>
 </UserControl>

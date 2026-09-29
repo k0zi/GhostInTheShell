@@ -3,6 +3,7 @@
                    xmlns:sukiUi="clr-namespace:SukiUI.Controls;assembly=SukiUI"
                    xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
                    xmlns:vm="using:GhostInTheShell.App.ViewModels"
+                   xmlns:l="using:GhostInTheShell.App.Localization"
                    x:Class="GhostInTheShell.App.Views.MainWindow"
                    x:DataType="vm:MainWindowViewModel"
                    Title="Ghost in the Shell"
@@ -15,10 +16,10 @@
     <sukiUi:SukiWindow.RightWindowTitleBarControls>
         <StackPanel Orientation="Horizontal" Spacing="4">
             <TextBlock Text="{Binding BackendText}" VerticalAlignment="Center" Opacity="0.6" FontSize="12" Margin="0 0 8 0" />
-            <Button Classes="Basic" Command="{Binding ToggleThemeCommand}" ToolTip.Tip="Téma váltása">
+            <Button Classes="Basic" Command="{Binding ToggleThemeCommand}" ToolTip.Tip="{l:Tr ToggleTheme}">
                 <mi:MaterialIcon Kind="ThemeLightDark" />
             </Button>
-            <Button Classes="Basic" Command="{Binding OpenSettingsCommand}" ToolTip.Tip="Beállítások">
+            <Button Classes="Basic" Command="{Binding OpenSettingsCommand}" ToolTip.Tip="{l:Tr Settings}">
                 <mi:MaterialIcon Kind="Cog" />
             </Button>
         </StackPanel>
@@ -33,34 +34,34 @@
         <!-- Header -->
         <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0 0 0 16">
             <StackPanel Spacing="2">
-                <TextBlock Text="Gépek" FontSize="24" FontWeight="SemiBold" />
-                <TextBlock Text="Izolált Linux környezetek coding agentekhez" Opacity="0.6" />
+                <TextBlock Text="{l:Tr Machines}" FontSize="24" FontWeight="SemiBold" />
+                <TextBlock Text="{l:Tr AppSubtitle}" Opacity="0.6" />
             </StackPanel>
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                <Button Classes="Basic" Command="{Binding RefreshCommand}" ToolTip.Tip="Frissítés">
+                <Button Classes="Basic" Command="{Binding RefreshCommand}" ToolTip.Tip="{l:Tr Refresh}">
                     <mi:MaterialIcon Kind="Refresh" />
                 </Button>
                 <Button Classes="Flat" Command="{Binding NewMachineCommand}" IsEnabled="{Binding BackendError, Converter={x:Static ObjectConverters.IsNull}}">
                     <StackPanel Orientation="Horizontal" Spacing="6">
                         <mi:MaterialIcon Kind="Plus" />
-                        <TextBlock Text="Új gép" />
+                        <TextBlock Text="{l:Tr NewMachine}" />
                     </StackPanel>
                 </Button>
             </StackPanel>
         </Grid>
 
         <sukiUi:InfoBar DockPanel.Dock="Top" Margin="0 0 0 12" Severity="Error" IsClosable="False"
-                        Title="A backend nem érhető el" Message="{Binding BackendError}"
+                        Title="{l:Tr BackendUnavailable}" Message="{Binding BackendError}"
                         IsVisible="{Binding BackendError, Converter={x:Static ObjectConverters.IsNotNull}}" />
         <sukiUi:InfoBar DockPanel.Dock="Top" Margin="0 0 0 12" Severity="Warning" IsClosable="True"
-                        Title="Megjegyzés" Message="{Binding BackendWarning}"
+                        Title="{l:Tr Note}" Message="{Binding BackendWarning}"
                         IsVisible="{Binding BackendWarning, Converter={x:Static ObjectConverters.IsNotNull}}" />
 
         <Panel>
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12" IsVisible="{Binding IsEmpty}">
                 <mi:MaterialIcon Kind="GhostOffOutline" Width="56" Height="56" Opacity="0.4" />
-                <TextBlock Text="Még nincs egy gép sem." HorizontalAlignment="Center" Opacity="0.7" />
-                <Button Classes="Flat" Content="Első gép létrehozása" HorizontalAlignment="Center" Command="{Binding NewMachineCommand}" />
+                <TextBlock Text="{l:Tr NoMachines}" HorizontalAlignment="Center" Opacity="0.7" />
+                <Button Classes="Flat" Content="{l:Tr CreateFirstMachine}" HorizontalAlignment="Center" Command="{Binding NewMachineCommand}" />
             </StackPanel>
 
             <ScrollViewer>
@@ -72,7 +73,7 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:MachineViewModel">
-                            <sukiUi:GlassCard Padding="16">
+                            <sukiUi:GlassCard Padding="16" DoubleTapped="Card_DoubleTapped">
                                 <StackPanel Spacing="10">
                                     <Grid ColumnDefinitions="Auto,*,Auto">
                                         <!-- State dot -->
@@ -120,43 +121,43 @@
 
                                         <!-- Actions -->
                                         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                            <Button Classes="Basic" ToolTip.Tip="Terminál"
+                                            <Button Classes="Basic" ToolTip.Tip="{l:Tr OpenTerminal}"
                                                     IsVisible="{Binding !IsCreating}" IsEnabled="{Binding CanOpenTerminal}"
                                                     Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).OpenTerminalCommand}"
                                                     CommandParameter="{Binding}">
                                                 <mi:MaterialIcon Kind="Console" />
                                             </Button>
-                                            <Button Classes="Basic" ToolTip.Tip="Indítás"
+                                            <Button Classes="Basic" ToolTip.Tip="{l:Tr Start}"
                                                     IsVisible="{Binding CanStart}"
                                                     Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).StartCommand}"
                                                     CommandParameter="{Binding}">
                                                 <mi:MaterialIcon Kind="Play" />
                                             </Button>
-                                            <Button Classes="Basic" ToolTip.Tip="Leállítás"
+                                            <Button Classes="Basic" ToolTip.Tip="{l:Tr Stop}"
                                                     IsVisible="{Binding IsRunning}" IsEnabled="{Binding CanStop}"
                                                     Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).StopCommand}"
                                                     CommandParameter="{Binding}">
                                                 <mi:MaterialIcon Kind="Stop" />
                                             </Button>
-                                            <Button Classes="Basic" ToolTip.Tip="Napló"
+                                            <Button Classes="Basic" ToolTip.Tip="{l:Tr Log}"
                                                     IsVisible="{Binding State, Converter={x:Static vm:Converters.IsCreatingState}}"
                                                     Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).ToggleLogCommand}"
                                                     CommandParameter="{Binding}">
                                                 <mi:MaterialIcon Kind="TextBoxOutline" />
                                             </Button>
-                                            <Button Classes="Basic" ToolTip.Tip="Megszakítás"
+                                            <Button Classes="Basic" ToolTip.Tip="{l:Tr Abort}"
                                                     IsVisible="{Binding IsCreating}"
                                                     Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).CancelCreateCommand}"
                                                     CommandParameter="{Binding}">
                                                 <mi:MaterialIcon Kind="Cancel" />
                                             </Button>
-                                            <Button Classes="Basic" ToolTip.Tip="Elvetés"
+                                            <Button Classes="Basic" ToolTip.Tip="{l:Tr Dismiss}"
                                                     IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}"
                                                     Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).DismissCommand}"
                                                     CommandParameter="{Binding}">
                                                 <mi:MaterialIcon Kind="Close" />
                                             </Button>
-                                            <Button Classes="Basic Danger" ToolTip.Tip="Törlés"
+                                            <Button Classes="Basic Danger" ToolTip.Tip="{l:Tr Delete}"
                                                     IsVisible="{Binding !IsCreating}" IsEnabled="{Binding CanDelete}"
                                                     Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).DeleteCommand}"
                                                     CommandParameter="{Binding}">

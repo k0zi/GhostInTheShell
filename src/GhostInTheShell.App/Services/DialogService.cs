@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using GhostInTheShell.Core.Localization;
 using SukiUI.Dialogs;
 
 namespace GhostInTheShell.App.Services;
@@ -17,7 +18,7 @@ public sealed class DialogService(ISukiDialogManager manager)
                 Spacing = 8,
                 HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
             };
-            var cancel = new Button { Content = "Mégse" };
+            var cancel = new Button { Content = Strings.Get("Cancel") };
             cancel.Click += (_, _) => complete(false);
             var ok = new Button { Content = confirmText, Classes = { "Flat", "Danger" } };
             ok.Click += (_, _) => complete(true);

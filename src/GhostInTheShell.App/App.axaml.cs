@@ -7,6 +7,7 @@ using GhostInTheShell.App.ViewModels;
 using GhostInTheShell.App.Views;
 using GhostInTheShell.Core;
 using GhostInTheShell.Core.Catalog;
+using GhostInTheShell.Core.Localization;
 using GhostInTheShell.Podman;
 using Microsoft.Extensions.DependencyInjection;
 using SukiUI;
@@ -37,6 +38,7 @@ public partial class App : Application
 
             var settings = services.GetRequiredService<SettingsService>();
             settings.Load();
+            Strings.SetLanguage(settings.Current.Language);
             SukiTheme.GetInstance().ChangeBaseTheme(settings.Current.DarkTheme ? ThemeVariant.Dark : ThemeVariant.Light);
 
             var mainVm = services.GetRequiredService<MainWindowViewModel>();

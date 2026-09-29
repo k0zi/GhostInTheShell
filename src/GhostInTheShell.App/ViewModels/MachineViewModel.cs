@@ -1,6 +1,6 @@
-using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using GhostInTheShell.Core.Catalog;
+using GhostInTheShell.Core.Localization;
 using GhostInTheShell.Core.Models;
 
 namespace GhostInTheShell.App.ViewModels;
@@ -56,11 +56,11 @@ public sealed partial class MachineViewModel : ViewModelBase
 
     public bool HasAgents => Info.Spec.AgentIds.Count > 0;
 
-    public string ResourcesText => string.Create(CultureInfo.InvariantCulture,
-        $"{Info.Spec.Cpus} CPU · {Info.Spec.MemoryMb / 1024.0:0.#} GB RAM · {Info.Spec.DiskGb} GB tár");
+    public string ResourcesText =>
+        Strings.Format("ResourcesFormat", Info.Spec.Cpus, Info.Spec.MemoryMb / 1024.0, Info.Spec.DiskGb);
 
     public string? UsageText => Info.DiskUsedBytes is { } used
-        ? string.Create(CultureInfo.InvariantCulture, $"Foglalt: {used / (1024.0 * 1024 * 1024):0.00} / {Info.Spec.DiskGb} GB")
+        ? Strings.Format("UsageFormat", used / (1024.0 * 1024 * 1024), Info.Spec.DiskGb)
         : null;
 
     public bool IsOverDiskLimit => Info.IsOverDiskLimit;
@@ -74,13 +74,13 @@ public sealed partial class MachineViewModel : ViewModelBase
     public bool IsFailed => Error is not null || State == VmState.Error;
 
     public string StateText => Error is not null && State == VmState.Creating
-        ? "Sikertelen"
+        ? Strings.Get("StateFailed")
         : State switch
         {
-            VmState.Creating => "Létrehozás…",
-            VmState.Running => "Fut",
-            VmState.Stopped => "Leállítva",
-            _ => Info.StatusText ?? "Hiba",
+            VmState.Creating => Strings.Get("StateCreating"),
+            VmState.Running => Strings.Get("StateRunning"),
+            VmState.Stopped => Strings.Get("StateStopped"),
+            _ => Info.StatusText ?? Strings.Get("StateError"),
         };
 
     public bool CanStart => !IsBusy && State is VmState.Stopped or VmState.Error;
@@ -96,6 +96,14 @@ public sealed partial class MachineViewModel : ViewModelBase
         _logLines.Add(line);
         if (_logLines.Count > MaxLogLines) _logLines.RemoveRange(0, _logLines.Count - MaxLogLines);
         Log = string.Join('\n', _logLines);
+    }
+
+    /// <summary>Re-reads the texts built in code after the UI language changed.</summary>
+    public void RefreshTexts()
+    {
+        OnPropertyChanged(nameof(ResourcesText));
+        OnPropertyChanged(nameof(UsageText));
+        OnPropertyChanged(nameof(StateText));
     }
 
     partial void OnErrorChanged(string? value) => OnPropertyChanged(nameof(IsCreating));

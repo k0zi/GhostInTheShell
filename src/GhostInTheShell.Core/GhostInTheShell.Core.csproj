@@ -1,4 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <NeutralLanguage>en</NeutralLanguage>
+  </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="catalog.json" LogicalName="GhostInTheShell.Core.catalog.json" />
   </ItemGroup>

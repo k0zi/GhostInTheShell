@@ -1,6 +1,6 @@
 # Ghost in the Shell
 
-A desktop manager for creating, starting, stopping, deleting and opening terminals into isolated Linux sandboxes (Ubuntu, Fedora or Manjaro) with coding agents preinstalled (Claude Code, pi, Hermes, OpenCode). You set the CPU, memory and disk for each sandbox.
+A desktop manager for creating, starting, stopping, deleting and opening terminals into isolated Linux sandboxes (Ubuntu, Fedora or Manjaro) with coding agents preinstalled (Claude Code, Codex, pi, Hermes, OpenCode). You set the CPU, memory and disk for each sandbox.
 
 Built with [Avalonia 12](https://avaloniaui.net/) and [SukiUI](https://github.com/kikipoulet/SukiUI). The machines run as rootless [Podman](https://podman.io/) containers.
 
@@ -10,10 +10,11 @@ Built with [Avalonia 12](https://avaloniaui.net/) and [SukiUI](https://github.co
 
 - **Create a machine**: pick a name, Linux distribution, CPU cores, memory, disk size and the coding agents to install. The build log streams into the machine's card, and you can cancel the build.
 - **Start / stop / delete**: deleting asks for confirmation and removes the machine together with its home volume.
-- **Open a terminal**: opens a login shell as the `agent` user in your terminal emulator (Ptyxis, GNOME Terminal, Konsole, kitty, Alacritty, Ghostty, WezTerm, xterm, and others).
+- **Open a terminal**: double-click a running machine's card (or use its terminal button) to open a login shell as the `agent` user in your terminal emulator (Ptyxis, GNOME Terminal, Konsole, kitty, Alacritty, Ghostty, WezTerm, xterm, and others).
 - **Live status**: the list follows `podman events`, so it also picks up changes you make with the `podman` CLI.
 - **Disk usage**: shows the space each machine uses against its limit, and turns red when a machine goes over it.
 - **Light and dark theme**.
+- **Language**: the UI is in English by default; switch to Hungarian (Magyar) under Settings → Language.
 
 <img src="docs/create.png" alt="New machine dialog" width="420">
 
@@ -31,6 +32,7 @@ Built with [Avalonia 12](https://avaloniaui.net/) and [SukiUI](https://github.co
 | Agent | Installed with |
 |---|---|
 | [Claude Code](https://claude.com/claude-code) | `curl -fsSL https://claude.ai/install.sh \| bash` |
+| [Codex](https://github.com/openai/codex) | `npm install -g @openai/codex` |
 | [pi](https://pi.dev) | `npm install -g @earendil-works/pi-coding-agent` |
 | [Hermes Agent](https://github.com/NousResearch/hermes-agent) | official install script (`--non-interactive`) |
 | [OpenCode](https://opencode.ai) | `curl -fsSL https://opencode.ai/install \| bash` |
@@ -76,7 +78,7 @@ Files live in `~/.config/ghostintheshell/`:
 
 | File | Purpose |
 |---|---|
-| `settings.json` | terminal command template and theme (editable from **Settings** in the app) |
+| `settings.json` | terminal command template, language and theme (editable from **Settings** in the app) |
 | `catalog.json` | *optional*: replaces the built-in distro and agent catalog |
 
 ### Terminal template
@@ -110,6 +112,10 @@ Install scripts change. To fix or extend them without rebuilding the app, copy [
   "userPath": [ "/home/agent/.local/bin" ]
 }
 ```
+
+### Translations
+
+UI text lives in [`src/GhostInTheShell.Core/Localization`](src/GhostInTheShell.Core/Localization): `Strings.resx` is English, `Strings.<code>.resx` holds a translation. To add a language, copy `Strings.hu.resx`, translate the values, and add the code to `Strings.Languages`. A test checks that every translation has every key and the same `{0}` placeholders.
 
 ## Project layout
 

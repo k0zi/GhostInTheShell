@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name="AppSubtitle" xml:space="preserve"><value>Isolated Linux environments for coding agents</value></data>
+  <data name="Machines" xml:space="preserve"><value>Machines</value></data>
+  <data name="NewMachine" xml:space="preserve"><value>New machine</value></data>
+  <data name="Refresh" xml:space="preserve"><value>Refresh</value></data>
+  <data name="ToggleTheme" xml:space="preserve"><value>Toggle theme</value></data>
+  <data name="Settings" xml:space="preserve"><value>Settings</value></data>
+  <data name="BackendUnavailable" xml:space="preserve"><value>Backend unavailable</value></data>
+  <data name="Note" xml:space="preserve"><value>Note</value></data>
+  <data name="NoMachines" xml:space="preserve"><value>No machines yet.</value></data>
+  <data name="CreateFirstMachine" xml:space="preserve"><value>Create your first machine</value></data>
+  <data name="OpenTerminal" xml:space="preserve"><value>Open terminal (or double-click the card)</value></data>
+  <data name="Start" xml:space="preserve"><value>Start</value></data>
+  <data name="Stop" xml:space="preserve"><value>Stop</value></data>
+  <data name="Log" xml:space="preserve"><value>Log</value></data>
+  <data name="Abort" xml:space="preserve"><value>Abort</value></data>
+  <data name="Dismiss" xml:space="preserve"><value>Dismiss</value></data>
+  <data name="Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Create" xml:space="preserve"><value>Create</value></data>
+  <data name="StateCreating" xml:space="preserve"><value>Creating…</value></data>
+  <data name="StateRunning" xml:space="preserve"><value>Running</value></data>
+  <data name="StateStopped" xml:space="preserve"><value>Stopped</value></data>
+  <data name="StateFailed" xml:space="preserve"><value>Failed</value></data>
+  <data name="StateError" xml:space="preserve"><value>Error</value></data>
+  <data name="ResourcesFormat" xml:space="preserve"><value>{0} CPU · {1:0.#} GB RAM · {2} GB disk</value></data>
+  <data name="UsageFormat" xml:space="preserve"><value>Used: {0:0.00} / {1} GB</value></data>
+  <data name="ListFailed" xml:space="preserve"><value>Could not list machines</value></data>
+  <data name="MachineCreated" xml:space="preserve"><value>Machine created</value></data>
+  <data name="MachineRunningFormat" xml:space="preserve"><value>{0} is running.</value></data>
+  <data name="CreateCancelled" xml:space="preserve"><value>Creation cancelled</value></data>
+  <data name="CreateFailedFormat" xml:space="preserve"><value>Failed to create {0}</value></data>
+  <data name="StartFailedFormat" xml:space="preserve"><value>Failed to start {0}</value></data>
+  <data name="StopFailedFormat" xml:space="preserve"><value>Failed to stop {0}</value></data>
+  <data name="DeleteFailedFormat" xml:space="preserve"><value>Failed to delete {0}</value></data>
+  <data name="DeleteMachine" xml:space="preserve"><value>Delete machine</value></data>
+  <data name="DeleteConfirmFormat" xml:space="preserve"><value>Are you sure you want to delete “{0}”?
+
+The machine and all data in its /home/agent volume will be lost permanently.</value></data>
+  <data name="TerminalFailed" xml:space="preserve"><value>Could not open a terminal (Settings → command template)</value></data>
+  <data name="Name" xml:space="preserve"><value>Name</value></data>
+  <data name="NamePlaceholder" xml:space="preserve"><value>e.g. claude-sandbox</value></data>
+  <data name="OperatingSystem" xml:space="preserve"><value>Operating system</value></data>
+  <data name="CpuCores" xml:space="preserve"><value>CPU cores</value></data>
+  <data name="Memory" xml:space="preserve"><value>Memory</value></data>
+  <data name="Disk" xml:space="preserve"><value>Disk</value></data>
+  <data name="CodingAgents" xml:space="preserve"><value>Coding agents</value></data>
+  <data name="NameExistsFormat" xml:space="preserve"><value>A machine named “{0}” already exists.</value></data>
+  <data name="Language" xml:space="preserve"><value>Language</value></data>
+  <data name="Terminal" xml:space="preserve"><value>Terminal</value></data>
+  <data name="TerminalPresetPlaceholder" xml:space="preserve"><value>Preset terminal…</value></data>
+  <data name="CommandTemplate" xml:space="preserve"><value>Command template</value></data>
+  <data name="CommandTemplateHint" xml:space="preserve"><value>{cmd} is replaced with the command that enters the machine (podman exec …).</value></data>
+  <data name="TemplateMissingTokenFormat" xml:space="preserve"><value>The template must contain the {0} placeholder.</value></data>
+  <data name="TemplateEmpty" xml:space="preserve"><value>The terminal template is empty.</value></data>
+  <data name="NameInvalid" xml:space="preserve"><value>The name must be 2–31 characters: lowercase letters, digits and hyphens, starting with a letter or digit.</value></data>
+  <data name="CpuMin" xml:space="preserve"><value>At least 1 CPU core is required.</value></data>
+  <data name="MemoryMin" xml:space="preserve"><value>At least 256 MB of memory is required.</value></data>
+  <data name="DiskMin" xml:space="preserve"><value>At least 1 GB of disk is required.</value></data>
+  <data name="OsRequired" xml:space="preserve"><value>Choose an operating system.</value></data>
+  <data name="PodmanNotFoundFormat" xml:space="preserve"><value>Podman was not found. Install it with: sudo apt install podman ({0})</value></data>
+  <data name="PodmanNotWorkingFormat" xml:space="preserve"><value>Podman is not working: {0}</value></data>
+  <data name="PodmanStartFailedFormat" xml:space="preserve"><value>Could not start podman ({0}): {1}</value></data>
+  <data name="ExitCodeFormat" xml:space="preserve"><value>exit code {0}</value></data>
+  <data name="DiskQuotaNotEnforceable" xml:space="preserve"><value>The disk limit cannot be enforced on this host (rootless podman / non-XFS storage). Usage is monitored and turns red when a machine goes over it.</value></data>
+  <data name="MachineExistsFormat" xml:space="preserve"><value>A machine with this name already exists: {0}</value></data>
+  <data name="LogCreatingVolumeFormat" xml:space="preserve"><value>» Creating volume: {0}</value></data>
+  <data name="LogCreatingContainerFormat" xml:space="preserve"><value>» Creating container: {0}</value></data>
+  <data name="LogQuotaNotEnforced" xml:space="preserve"><value>  (the disk limit cannot be enforced on this storage, it will only be monitored)</value></data>
+  <data name="LogStarting" xml:space="preserve"><value>» Starting</value></data>
+  <data name="LogDone" xml:space="preserve"><value>✓ Done</value></data>
+  <data name="LogCachedImageFormat" xml:space="preserve"><value>» Using cached image: {0}</value></data>
+  <data name="LogBuildingImageFormat" xml:space="preserve"><value>» Building image: {0}</value></data>
+</root>

@@ -11,7 +11,7 @@ public class ContainerfileBuilderTests
     public void Default_catalog_has_the_requested_distros_and_agents()
     {
         Assert.Equal(["ubuntu-24.04", "ubuntu-26.04", "fedora-43", "manjaro"], Catalog.OperatingSystems.Select(o => o.Id));
-        Assert.Equal(["claude", "pi", "hermes", "opencode"], Catalog.Agents.Select(a => a.Id));
+        Assert.Equal(["claude", "codex", "pi", "hermes", "opencode"], Catalog.Agents.Select(a => a.Id));
     }
 
     [Fact]
