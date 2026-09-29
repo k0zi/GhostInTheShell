@@ -93,4 +93,12 @@ A gép és a /home/agent kötet minden adata véglegesen elvész.</value></data>
   <data name="AdminPasswordsDoNotMatch" xml:space="preserve"><value>Az admin jelszavak nem egyeznek.</value></data>
   <data name="PasswordLineBreak" xml:space="preserve"><value>A jelszó nem tartalmazhat sortörést.</value></data>
   <data name="LogConfiguringUserFormat" xml:space="preserve"><value>» Felhasználói fiók beállítása: {0}</value></data>
+  <data name="TabSharedFolder" xml:space="preserve"><value>Megosztott mappa</value></data>
+  <data name="HostFolder" xml:space="preserve"><value>Mappa a host gépen</value></data>
+  <data name="HostFolderPlaceholder" xml:space="preserve"><value>Üresen hagyva nincs megosztás</value></data>
+  <data name="Browse" xml:space="preserve"><value>Tallózás…</value></data>
+  <data name="HostFolderHint" xml:space="preserve"><value>A sandboxban írható-olvasható módon a ~/host könyvtárba csatolódik, a sandbox felhasználójának tulajdonában. Ha üresen hagyod, nincs megosztás, és ~/host könyvtár sem jön létre.</value></data>
+  <data name="HostFolderInvalid" xml:space="preserve"><value>A host mappa abszolút útvonal legyen, és nem tartalmazhat kettőspontot (:).</value></data>
+  <data name="HostFolderMissingFormat" xml:space="preserve"><value>A host mappa nem létezik: {0}</value></data>
+  <data name="LogSharingHostFolderFormat" xml:space="preserve"><value>» Host mappa megosztása: {0} → ~/{1}</value></data>
 </root>

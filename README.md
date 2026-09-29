@@ -10,6 +10,7 @@ Built with [Avalonia 12](https://avaloniaui.net/) and [SukiUI](https://github.co
 
 - **Create a machine**: pick a name, Linux distribution, CPU cores, memory, disk size, the coding agents and the development environments to install. The build log streams into the machine's card, and you can cancel the build.
 - **User account** (second tab of the new machine dialog): the login user's name (default `agent`), its password for `sudo`, and the root (admin) password. Without a user password `sudo` works without one; without an admin password root login stays disabled. Passwords are set with `chpasswd` over stdin after the container starts and are never stored by the app, in the image or in labels.
+- **Shared folder** (third tab of the new machine dialog): a host folder mounted read-write at `~/host` in the sandbox. Under rootless Podman the container runs with `--userns=keep-id`, mapping your host user onto the sandbox user, so files either side creates belong to you on the host. SELinux separation is switched off for that container instead of relabelling your folder. Leave it empty and nothing is mounted; no `~/host` folder is created either.
 - **Start / stop / delete**: deleting asks for confirmation and removes the machine together with its home volume.
 - **Open a terminal**: double-click a running machine's card (or use its terminal button) to open a login shell as the machine's user in your terminal emulator (Ptyxis, GNOME Terminal, Konsole, kitty, Alacritty, Ghostty, WezTerm, xterm, and others).
 - **Live status**: the list follows `podman events`, so it also picks up changes you make with the `podman` CLI.
@@ -153,5 +154,6 @@ All backend calls go through `IVmProvider`, so you can add another backend (QEMU
 ## Security notes
 
 - The machines are **containers, not VMs**: they share the host kernel. Rootless Podman keeps them isolated from your user account, but they don't give you the isolation of a hypervisor.
+- A shared folder is fully writable from the sandbox, and so by any agent running there. Share a project folder, not your whole home.
 - The login user has sudo **inside** the container: with its password if you set one, otherwise without a password.
 - Agent install scripts are downloaded from their vendors and run at build time. Review `catalog.json` if that matters to you.

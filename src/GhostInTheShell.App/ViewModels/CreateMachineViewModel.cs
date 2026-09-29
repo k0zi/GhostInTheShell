@@ -45,6 +45,7 @@ public sealed partial class CreateMachineViewModel : ViewModelBase
 {
     public const int MachineTab = 0;
     public const int UserAccountTab = 1;
+    public const int SharedFolderTab = 2;
 
     private readonly Action<NewMachineRequest?> _complete;
     private readonly IReadOnlySet<string> _existingNames;
@@ -91,6 +92,8 @@ public sealed partial class CreateMachineViewModel : ViewModelBase
     [ObservableProperty] private string _adminPassword = "";
     [ObservableProperty] private string _adminPasswordConfirm = "";
 
+    [ObservableProperty] private string _hostFolder = "";
+
     [RelayCommand]
     private void Create()
     {
@@ -102,7 +105,8 @@ public sealed partial class CreateMachineViewModel : ViewModelBase
             SelectedOs?.Id ?? "",
             Agents.Where(a => a.IsSelected).Select(a => a.Definition.Id).ToList(),
             Toolchains.Where(t => t.IsSelected).Select(t => t.Definition.Id).ToList(),
-            UserName.Trim());
+            UserName.Trim(),
+            NormalizeHostFolder(HostFolder));
         var credentials = new VmCredentials(UserPassword, AdminPassword);
 
         // Account problems first, and on their own tab, so the message points at fields the user can see.
@@ -114,6 +118,17 @@ public sealed partial class CreateMachineViewModel : ViewModelBase
         {
             ErrorText = accountError;
             SelectedTab = UserAccountTab;
+            return;
+        }
+
+        var folderError = spec.HostFolder is null ? null
+            : !VmSpec.IsValidHostFolder(spec.HostFolder) ? Strings.Get("HostFolderInvalid")
+            : !Directory.Exists(spec.HostFolder) ? Strings.Format("HostFolderMissingFormat", spec.HostFolder)
+            : null;
+        if (folderError is not null)
+        {
+            ErrorText = folderError;
+            SelectedTab = SharedFolderTab;
             return;
         }
 
@@ -139,6 +154,18 @@ public sealed partial class CreateMachineViewModel : ViewModelBase
             option.IsSupported = SelectedOs is not null && option.Definition.SupportsOs(SelectedOs);
         foreach (var option in Toolchains)
             option.IsSupported = SelectedOs is not null && option.Definition.SupportsOs(SelectedOs);
+    }
+
+    /// <summary>Empty means no sharing; <c>~</c> is the host user's home, as in a shell.</summary>
+    internal static string? NormalizeHostFolder(string text)
+    {
+        var path = text.Trim();
+        if (path.Length == 0) return null;
+        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        if (path == "~") path = home;
+        else if (path.StartsWith("~/", StringComparison.Ordinal)) path = Path.Combine(home, path[2..]);
+        // Path.TrimEndingDirectorySeparator keeps "/" itself intact.
+        return Path.TrimEndingDirectorySeparator(path);
     }
 
     private static string SuggestName(IReadOnlySet<string> existing)

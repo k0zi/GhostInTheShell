@@ -133,6 +133,17 @@
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
+
+            <TabItem Header="{l:Tr TabSharedFolder}">
+                <StackPanel Spacing="4" Margin="0 0 12 0">
+                    <TextBlock Text="{l:Tr HostFolder}" FontWeight="SemiBold" />
+                    <Grid ColumnDefinitions="*,8,Auto">
+                        <TextBox Text="{Binding HostFolder}" PlaceholderText="{l:Tr HostFolderPlaceholder}" FontFamily="monospace" />
+                        <Button Grid.Column="2" Content="{l:Tr Browse}" Click="Browse_Click" />
+                    </Grid>
+                    <TextBlock Classes="hint" Text="{l:Tr HostFolderHint}" />
+                </StackPanel>
+            </TabItem>
         </TabControl>
     </DockPanel>
 

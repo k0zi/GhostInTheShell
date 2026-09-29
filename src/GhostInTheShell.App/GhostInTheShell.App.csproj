@@ -16,6 +16,9 @@
         <PackageReference Include="SukiUI" Version="7.0.1" />
     </ItemGroup>
     <ItemGroup>
+        <InternalsVisibleTo Include="GhostInTheShell.Tests" />
+    </ItemGroup>
+    <ItemGroup>
         <ProjectReference Include="..\GhostInTheShell.Core\GhostInTheShell.Core.csproj" />
         <ProjectReference Include="..\GhostInTheShell.Podman\GhostInTheShell.Podman.csproj" />
     </ItemGroup>

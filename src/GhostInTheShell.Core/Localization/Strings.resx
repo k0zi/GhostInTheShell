@@ -93,4 +93,12 @@ The machine and all data in its /home/agent volume will be lost permanently.</va
   <data name="AdminPasswordsDoNotMatch" xml:space="preserve"><value>The admin passwords do not match.</value></data>
   <data name="PasswordLineBreak" xml:space="preserve"><value>Passwords cannot contain line breaks.</value></data>
   <data name="LogConfiguringUserFormat" xml:space="preserve"><value>» Setting up user account: {0}</value></data>
+  <data name="TabSharedFolder" xml:space="preserve"><value>Shared folder</value></data>
+  <data name="HostFolder" xml:space="preserve"><value>Folder on the host</value></data>
+  <data name="HostFolderPlaceholder" xml:space="preserve"><value>Leave empty to share nothing</value></data>
+  <data name="Browse" xml:space="preserve"><value>Browse…</value></data>
+  <data name="HostFolderHint" xml:space="preserve"><value>Mounted read-write in the sandbox at ~/host, owned by the sandbox user. Leave it empty to share nothing; then no ~/host folder is created either.</value></data>
+  <data name="HostFolderInvalid" xml:space="preserve"><value>The host folder must be an absolute path and cannot contain a colon (:).</value></data>
+  <data name="HostFolderMissingFormat" xml:space="preserve"><value>The host folder does not exist: {0}</value></data>
+  <data name="LogSharingHostFolderFormat" xml:space="preserve"><value>» Sharing host folder {0} as ~/{1}</value></data>
 </root>

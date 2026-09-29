@@ -99,6 +99,9 @@ public sealed class PodmanProvider(Core.Catalog.Catalog catalog, PodmanCli? cli 
     {
         if (spec.Validate() is { } error) throw new ArgumentException(error, nameof(spec));
         if (credentials.Validate() is { } credentialsError) throw new ArgumentException(credentialsError, nameof(credentials));
+        // Checked up front: podman would otherwise fail only after a possibly long image build.
+        if (spec.HostFolder is { } hostFolder && !Directory.Exists(hostFolder))
+            throw new DirectoryNotFoundException(Strings.Format("HostFolderMissingFormat", hostFolder));
 
         var containerName = PodmanLabels.ContainerName(spec.Name);
         var volumeName = PodmanLabels.HomeVolumeName(spec.Name);
@@ -114,8 +117,15 @@ public sealed class PodmanProvider(Core.Catalog.Catalog catalog, PodmanCli? cli 
             await _cli.RunAsync(["volume", "create", "--label", PodmanLabels.ManagedFilter, "--label", $"{PodmanLabels.Name}={spec.Name}", volumeName], ct);
             volumeCreated = true;
 
+            HostIds? keepId = null;
+            if (spec.HostFolder is not null)
+            {
+                log.Report(Strings.Format("LogSharingHostFolderFormat", spec.HostFolder, VmSpec.HostMountName));
+                keepId = await GetKeepIdAsync(image, ct);
+            }
+
             log.Report(Strings.Format("LogCreatingContainerFormat", containerName));
-            var createArgs = BuildCreateArgs(spec, image);
+            var createArgs = BuildCreateArgs(spec, image, keepId);
             var withQuota = await _cli.TryRunAsync([.. createArgs.Take(1), "--storage-opt", $"size={spec.DiskGb}G", .. createArgs.Skip(1)], ct);
             if (withQuota.ExitCode != 0)
             {
@@ -169,6 +179,21 @@ public sealed class PodmanProvider(Core.Catalog.Catalog catalog, PodmanCli? cli 
         }
     }
 
+    /// <summary>
+    /// The image user's uid/gid, so the host user can be mapped onto it (<c>--userns=keep-id</c>).
+    /// Only rootless podman needs this: rootful already sees the host's real ids.
+    /// </summary>
+    private async Task<HostIds?> GetKeepIdAsync(string image, CancellationToken ct)
+    {
+        var rootless = (await _cli.RunAsync(["info", "--format", "{{.Host.Security.Rootless}}"], ct)).Trim();
+        if (!bool.TryParse(rootless, out var isRootless) || !isRootless) return null;
+
+        // The image's USER is the machine user, so plain id reports it.
+        var ids = (await _cli.RunAsync(["run", "--rm", image, "sh", "-c", "id -u && id -g"], ct))
+            .Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return new HostIds(int.Parse(ids[0], CultureInfo.InvariantCulture), int.Parse(ids[1], CultureInfo.InvariantCulture));
+    }
+
     /// <summary>Sets the sudo rule and passwords as root inside the started container.</summary>
     private async Task ConfigureAccountsAsync(string containerName, string userName, VmCredentials credentials, CancellationToken ct)
     {
@@ -194,7 +219,10 @@ public sealed class PodmanProvider(Core.Catalog.Catalog catalog, PodmanCli? cli 
         return sb.Length == 0 ? null : sb.ToString();
     }
 
-    internal static List<string> BuildCreateArgs(VmSpec spec, string image) =>
+    internal readonly record struct HostIds(int Uid, int Gid);
+
+    /// <param name="keepId">The machine user's ids when a host folder is shared under rootless podman.</param>
+    internal static List<string> BuildCreateArgs(VmSpec spec, string image, HostIds? keepId = null) =>
     [
         "create",
         "--name", PodmanLabels.ContainerName(spec.Name),
@@ -204,17 +232,38 @@ public sealed class PodmanProvider(Core.Catalog.Catalog catalog, PodmanCli? cli 
         "--memory", $"{spec.MemoryMb.ToString(CultureInfo.InvariantCulture)}m",
         // Podman copies the image's home into an empty named volume, so installed agents survive.
         "-v", $"{PodmanLabels.HomeVolumeName(spec.Name)}:{ContainerfileBuilder.HomeDirectory(spec.UserName)}",
+        .. HostFolderArgs(spec, keepId),
         "--label", PodmanLabels.ManagedFilter,
         "--label", $"{PodmanLabels.Name}={spec.Name}",
         "--label", $"{PodmanLabels.Os}={spec.OsId}",
         "--label", $"{PodmanLabels.Agents}={string.Join(',', spec.AgentIds)}",
         "--label", $"{PodmanLabels.Toolchains}={string.Join(',', spec.ToolchainIds)}",
         "--label", $"{PodmanLabels.User}={spec.UserName}",
+        .. spec.HostFolder is null ? [] : new[] { "--label", $"{PodmanLabels.HostFolder}={spec.HostFolder}" },
         "--label", $"{PodmanLabels.Cpus}={spec.Cpus.ToString(CultureInfo.InvariantCulture)}",
         "--label", $"{PodmanLabels.MemoryMb}={spec.MemoryMb.ToString(CultureInfo.InvariantCulture)}",
         "--label", $"{PodmanLabels.DiskGb}={spec.DiskGb.ToString(CultureInfo.InvariantCulture)}",
         image,
     ];
+
+    /// <summary>Nothing at all without a host folder, so no ~/host mount point is created either.</summary>
+    private static IEnumerable<string> HostFolderArgs(VmSpec spec, HostIds? keepId)
+    {
+        if (spec.HostFolder is null) yield break;
+
+        // Map the host user onto the machine user so both sides own what they create in the folder.
+        if (keepId is { } ids)
+        {
+            yield return "--userns";
+            yield return $"keep-id:uid={ids.Uid},gid={ids.Gid}";
+        }
+
+        // Relabelling (:z) would rewrite SELinux labels on the host folder; turn separation off for this container instead.
+        yield return "--security-opt";
+        yield return "label=disable";
+        yield return "-v";
+        yield return $"{spec.HostFolder}:{ContainerfileBuilder.HomeDirectory(spec.UserName)}/{VmSpec.HostMountName}";
+    }
 
     public async Task StartAsync(string id, CancellationToken ct = default)
     {

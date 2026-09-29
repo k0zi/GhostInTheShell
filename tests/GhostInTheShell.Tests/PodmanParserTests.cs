@@ -144,4 +144,46 @@ public class PodmanParserTests
         Assert.Equal("dev:u\nroot:r\n", PodmanProvider.ChpasswdInput("dev", new VmCredentials("u", "r")));
         Assert.Equal("root:r\n", PodmanProvider.ChpasswdInput("dev", new VmCredentials(null, "r")));
     }
+
+    [Fact]
+    public void Host_folder_is_mounted_as_home_host_with_the_user_mapped()
+    {
+        var spec = new VmSpec("ghost-1", 1, 1024, 5, "manjaro", [], [], "dev", "/home/me/code");
+        var args = PodmanProvider.BuildCreateArgs(spec, "img:tag", new PodmanProvider.HostIds(1001, 1002));
+
+        Assert.Contains("/home/me/code:/home/dev/host", args);
+        Assert.Equal("keep-id:uid=1001,gid=1002", args[args.IndexOf("--userns") + 1]);
+        Assert.Equal("label=disable", args[args.IndexOf("--security-opt") + 1]);
+        Assert.Contains("gits.host-folder=/home/me/code", args);
+        Assert.Equal("img:tag", args[^1]);
+    }
+
+    [Fact]
+    public void Without_a_host_folder_nothing_extra_is_mounted()
+    {
+        var args = PodmanProvider.BuildCreateArgs(new VmSpec("ghost-1", 1, 1024, 5, "manjaro", [], []), "img:tag");
+
+        Assert.Single(args, a => a == "-v"); // only the home volume
+        Assert.DoesNotContain("--userns", args);
+        Assert.DoesNotContain("--security-opt", args);
+        Assert.DoesNotContain(args, a => a.StartsWith("gits.host-folder"));
+    }
+
+    [Fact]
+    public void Rootful_podman_mounts_without_remapping_ids()
+    {
+        var spec = new VmSpec("ghost-1", 1, 1024, 5, "manjaro", [], [], "dev", "/srv");
+        var args = PodmanProvider.BuildCreateArgs(spec, "img:tag", keepId: null);
+        Assert.Contains("/srv:/home/dev/host", args);
+        Assert.DoesNotContain("--userns", args);
+    }
+
+    [Fact]
+    public void Host_folder_label_is_read_back()
+    {
+        var json = PsJson.Replace("\"gits.cpus\": \"2\"", "\"gits.cpus\": \"2\", \"gits.host-folder\": \"/home/me/code\"");
+        var machines = PodmanParser.ParseContainers(json);
+        Assert.Equal("/home/me/code", machines[0].Spec.HostFolder);
+        Assert.Null(machines[1].Spec.HostFolder);
+    }
 }

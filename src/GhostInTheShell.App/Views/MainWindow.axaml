@@ -99,6 +99,12 @@
                                                     <mi:MaterialIcon Kind="Account" Opacity="0.7" />
                                                     <TextBlock Text="{Binding UserName}" Opacity="0.8" />
                                                 </StackPanel>
+                                                <StackPanel Orientation="Horizontal" Spacing="4"
+                                                            IsVisible="{Binding HostFolder, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                            ToolTip.Tip="{Binding HostFolder, StringFormat='{}{0} → ~/host'}">
+                                                    <mi:MaterialIcon Kind="FolderNetworkOutline" Opacity="0.7" />
+                                                    <TextBlock Text="{Binding HostFolder}" Opacity="0.8" MaxWidth="240" TextTrimming="CharacterEllipsis" />
+                                                </StackPanel>
                                                 <StackPanel Orientation="Horizontal" Spacing="4">
                                                     <mi:MaterialIcon Kind="Memory" Opacity="0.7" />
                                                     <TextBlock Text="{Binding ResourcesText}" Opacity="0.8" />

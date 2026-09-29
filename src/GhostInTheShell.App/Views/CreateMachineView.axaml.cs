@@ -1,5 +1,8 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Platform.Storage;
+using GhostInTheShell.App.ViewModels;
 
 namespace GhostInTheShell.App.Views;
 
@@ -26,6 +29,23 @@ public partial class CreateMachineView : UserControl
         if (_topLevel is not null) _topLevel.SizeChanged -= TopLevel_SizeChanged;
         _topLevel = null;
         base.OnDetachedFromVisualTree(e);
+    }
+
+    // The picker needs the window, which the view model does not know about.
+    private async void Browse_Click(object? sender, RoutedEventArgs e)
+    {
+        if (_topLevel is null || DataContext is not CreateMachineViewModel vm) return;
+
+        var start = CreateMachineViewModel.NormalizeHostFolder(vm.HostFolder) is { } current && Directory.Exists(current)
+            ? await _topLevel.StorageProvider.TryGetFolderFromPathAsync(current)
+            : null;
+        var folders = await _topLevel.StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            Title = Core.Localization.Strings.Get("HostFolder"),
+            AllowMultiple = false,
+            SuggestedStartLocation = start,
+        });
+        if (folders.Count > 0 && folders[0].TryGetLocalPath() is { } path) vm.HostFolder = path;
     }
 
     private void TopLevel_SizeChanged(object? sender, SizeChangedEventArgs e) => FitToWindow();

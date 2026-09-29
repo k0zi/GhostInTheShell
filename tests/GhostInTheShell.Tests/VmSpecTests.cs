@@ -34,6 +34,34 @@ public class VmSpecTests
         Assert.NotNull(new VmSpec("ok", 1, 1024, 10, "manjaro", [], [], "root").Validate());
     }
 
+    [Theory]
+    [InlineData("/home/me/projects", true)]
+    [InlineData("/", true)]
+    [InlineData("relative/path", false)]
+    [InlineData("~/projects", false)] // the form expands ~ before it gets here
+    [InlineData("/home/me/a:b", false)] // would split the podman -v spec
+    [InlineData("/home/me/a\nb", false)]
+    public void IsValidHostFolder(string path, bool expected) => Assert.Equal(expected, VmSpec.IsValidHostFolder(path));
+
+    [Fact]
+    public void Host_folder_is_optional_and_validated()
+    {
+        Assert.Null(new VmSpec("ok", 1, 1024, 10, "manjaro", [], []).HostFolder);
+        Assert.Null(new VmSpec("ok", 1, 1024, 10, "manjaro", [], [], "agent", "/srv").Validate());
+        Assert.NotNull(new VmSpec("ok", 1, 1024, 10, "manjaro", [], [], "agent", "srv").Validate());
+    }
+
+    [Fact]
+    public void Form_normalizes_the_host_folder()
+    {
+        var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        Assert.Null(App.ViewModels.CreateMachineViewModel.NormalizeHostFolder("   "));
+        Assert.Equal(home, App.ViewModels.CreateMachineViewModel.NormalizeHostFolder("~"));
+        Assert.Equal(Path.Combine(home, "code"), App.ViewModels.CreateMachineViewModel.NormalizeHostFolder(" ~/code/ "));
+        Assert.Equal("/srv/data", App.ViewModels.CreateMachineViewModel.NormalizeHostFolder("/srv/data/"));
+        Assert.Equal("/", App.ViewModels.CreateMachineViewModel.NormalizeHostFolder("/"));
+    }
+
     [Fact]
     public void Credentials_never_print_passwords_and_reject_line_breaks()
     {
