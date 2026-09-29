@@ -49,7 +49,7 @@ Built with [Avalonia 12](https://avaloniaui.net/) and [SukiUI](https://github.co
 | Rust | stable toolchain via `rustup` (cargo, rustc, clippy, rustfmt) |
 | Python | pip, venv, pipx, dev headers (distro packages) and [uv](https://docs.astral.sh/uv/) |
 
-Every machine gets Node.js 24 LTS, Python 3, build tools, a sudo-capable login user, and these developer tools: git, git-lfs, curl, wget, jq, ripgrep (`rg`), fd, tree, htop, vim, nano, zip/unzip, rsync, an SSH client and gnupg.
+Every machine gets Node.js 24 LTS, Python 3, build tools, a sudo-capable login user, and these developer tools: git, git-lfs, curl, wget, jq, ripgrep (`rg`), fd, tree, htop, mc (Midnight Commander), vim, nano, zip/unzip, rsync, an SSH client and gnupg.
 
 ## Requirements
 

@@ -5,28 +5,28 @@
       "displayName": "Ubuntu 24.04 LTS",
       "image": "docker.io/library/ubuntu:24.04",
       "family": "debian",
-      "setup": "export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -y --no-install-recommends ca-certificates curl git sudo bash procps less nano unzip xz-utils python3 python3-venv build-essential wget jq ripgrep fd-find tree htop vim zip openssh-client rsync git-lfs file gnupg && rm -rf /var/lib/apt/lists/* && ln -sf /usr/bin/fdfind /usr/local/bin/fd"
+      "setup": "export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -y --no-install-recommends ca-certificates curl git sudo bash procps less nano unzip xz-utils python3 python3-venv build-essential wget jq ripgrep fd-find tree htop mc vim zip openssh-client rsync git-lfs file gnupg && rm -rf /var/lib/apt/lists/* && ln -sf /usr/bin/fdfind /usr/local/bin/fd"
     },
     {
       "id": "ubuntu-26.04",
       "displayName": "Ubuntu 26.04 LTS",
       "image": "docker.io/library/ubuntu:26.04",
       "family": "debian",
-      "setup": "export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -y --no-install-recommends ca-certificates curl git sudo bash procps less nano unzip xz-utils python3 python3-venv build-essential wget jq ripgrep fd-find tree htop vim zip openssh-client rsync git-lfs file gnupg && rm -rf /var/lib/apt/lists/* && ln -sf /usr/bin/fdfind /usr/local/bin/fd"
+      "setup": "export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -y --no-install-recommends ca-certificates curl git sudo bash procps less nano unzip xz-utils python3 python3-venv build-essential wget jq ripgrep fd-find tree htop mc vim zip openssh-client rsync git-lfs file gnupg && rm -rf /var/lib/apt/lists/* && ln -sf /usr/bin/fdfind /usr/local/bin/fd"
     },
     {
       "id": "fedora-43",
       "displayName": "Fedora 43",
       "image": "registry.fedoraproject.org/fedora:43",
       "family": "fedora",
-      "setup": "dnf install -y --allowerasing ca-certificates curl git sudo bash procps-ng less nano unzip xz tar gzip which findutils python3 gcc gcc-c++ make wget jq ripgrep fd-find tree htop vim-enhanced zip openssh-clients rsync git-lfs file gnupg2 && dnf clean all"
+      "setup": "dnf install -y --allowerasing ca-certificates curl git sudo bash procps-ng less nano unzip xz tar gzip which findutils python3 gcc gcc-c++ make wget jq ripgrep fd-find tree htop mc vim-enhanced zip openssh-clients rsync git-lfs file gnupg2 && dnf clean all"
     },
     {
       "id": "manjaro",
       "displayName": "Manjaro (rolling)",
       "image": "docker.io/manjarolinux/base:latest",
       "family": "arch",
-      "setup": "pacman-key --init && pacman-key --populate archlinux manjaro && pacman -Syu --noconfirm --needed ca-certificates curl git sudo bash procps-ng less nano unzip xz tar gzip which python base-devel wget jq ripgrep fd tree htop vim zip openssh rsync git-lfs file gnupg && pacman -Scc --noconfirm"
+      "setup": "pacman-key --init && pacman-key --populate archlinux manjaro && pacman -Syu --noconfirm --needed ca-certificates curl git sudo bash procps-ng less nano unzip xz tar gzip which python base-devel wget jq ripgrep fd tree htop mc vim zip openssh rsync git-lfs file gnupg && pacman -Scc --noconfirm"
     }
   ],
   "commonSetup": [

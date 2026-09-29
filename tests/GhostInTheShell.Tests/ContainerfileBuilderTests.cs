@@ -15,6 +15,17 @@ public class ContainerfileBuilderTests
         Assert.Equal(["cpp", "dotnet", "java", "rust", "python"], Catalog.Toolchains.Select(t => t.Id));
     }
 
+    [Theory]
+    [InlineData("git")]
+    [InlineData("ripgrep")]
+    [InlineData("jq")]
+    [InlineData("mc")]
+    public void Every_distro_installs_the_base_developer_tools(string package)
+    {
+        foreach (var os in Catalog.OperatingSystems)
+            Assert.Contains($" {package} ", os.Setup);
+    }
+
     [Fact]
     public void Every_toolchain_supports_every_default_distro()
     {
