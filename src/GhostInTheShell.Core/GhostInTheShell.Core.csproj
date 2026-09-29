@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <EmbeddedResource Include="catalog.json" LogicalName="GhostInTheShell.Core.catalog.json" />
+  </ItemGroup>
+</Project>

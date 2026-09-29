@@ -1,0 +1,66 @@
+{
+  "operatingSystems": [
+    {
+      "id": "ubuntu-24.04",
+      "displayName": "Ubuntu 24.04 LTS",
+      "image": "docker.io/library/ubuntu:24.04",
+      "setup": "export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -y --no-install-recommends ca-certificates curl git sudo bash procps less nano unzip xz-utils python3 python3-venv build-essential && rm -rf /var/lib/apt/lists/*"
+    },
+    {
+      "id": "ubuntu-26.04",
+      "displayName": "Ubuntu 26.04 LTS",
+      "image": "docker.io/library/ubuntu:26.04",
+      "setup": "export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -y --no-install-recommends ca-certificates curl git sudo bash procps less nano unzip xz-utils python3 python3-venv build-essential && rm -rf /var/lib/apt/lists/*"
+    },
+    {
+      "id": "fedora-43",
+      "displayName": "Fedora 43",
+      "image": "registry.fedoraproject.org/fedora:43",
+      "setup": "dnf install -y --allowerasing ca-certificates curl git sudo bash procps-ng less nano unzip xz tar gzip which findutils python3 gcc gcc-c++ make && dnf clean all"
+    },
+    {
+      "id": "manjaro",
+      "displayName": "Manjaro (rolling)",
+      "image": "docker.io/manjarolinux/base:latest",
+      "setup": "pacman-key --init && pacman-key --populate archlinux manjaro && pacman -Syu --noconfirm --needed ca-certificates curl git sudo bash procps-ng less nano unzip xz tar gzip which python base-devel && pacman -Scc --noconfirm"
+    }
+  ],
+  "commonSetup": [
+    "arch=$(uname -m); case \"$arch\" in x86_64) arch=x64 ;; aarch64) arch=arm64 ;; esac; tarball=$(curl -fsSL https://nodejs.org/dist/latest-v24.x/SHASUMS256.txt | awk '{print $2}' | grep -E \"^node-v[0-9.]+-linux-$arch\\.tar\\.xz$\"); curl -fsSL \"https://nodejs.org/dist/latest-v24.x/$tarball\" | tar -xJ -C /usr/local --strip-components=1 --exclude=CHANGELOG.md --exclude=LICENSE --exclude=README.md && node --version && npm --version"
+  ],
+  "agents": [
+    {
+      "id": "claude",
+      "displayName": "Claude Code",
+      "description": "Anthropic Claude Code CLI",
+      "install": "curl -fsSL https://claude.ai/install.sh | bash",
+      "check": "claude --version"
+    },
+    {
+      "id": "pi",
+      "displayName": "pi",
+      "description": "pi.dev coding agent",
+      "install": "npm install -g --prefix \"$HOME/.local\" @earendil-works/pi-coding-agent",
+      "check": "pi --version"
+    },
+    {
+      "id": "hermes",
+      "displayName": "Hermes Agent",
+      "description": "Nous Research Hermes Agent",
+      "install": "curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash -s -- --non-interactive --skip-browser",
+      "check": "hermes --version"
+    },
+    {
+      "id": "opencode",
+      "displayName": "OpenCode",
+      "description": "sst OpenCode CLI",
+      "install": "curl -fsSL https://opencode.ai/install | bash",
+      "check": "opencode --version"
+    }
+  ],
+  "userPath": [
+    "/home/agent/.local/bin",
+    "/home/agent/.opencode/bin",
+    "/home/agent/.hermes/bin"
+  ]
+}

@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/GhostInTheShell.App/GhostInTheShell.App.csproj" />
+    <Project Path="src/GhostInTheShell.Core/GhostInTheShell.Core.csproj" />
+    <Project Path="src/GhostInTheShell.Podman/GhostInTheShell.Podman.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/GhostInTheShell.Tests/GhostInTheShell.Tests.csproj" />
+  </Folder>
+</Solution>
