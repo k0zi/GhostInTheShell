@@ -79,4 +79,18 @@ The machine and all data in its /home/agent volume will be lost permanently.</va
   <data name="LogDone" xml:space="preserve"><value>✓ Done</value></data>
   <data name="LogCachedImageFormat" xml:space="preserve"><value>» Using cached image: {0}</value></data>
   <data name="LogBuildingImageFormat" xml:space="preserve"><value>» Building image: {0}</value></data>
+  <data name="TabMachine" xml:space="preserve"><value>Machine</value></data>
+  <data name="TabUserAccount" xml:space="preserve"><value>User account</value></data>
+  <data name="UserName" xml:space="preserve"><value>User name</value></data>
+  <data name="UserNameHint" xml:space="preserve"><value>You log in to the terminal as this user. Home directory: /home/&lt;name&gt;.</value></data>
+  <data name="Password" xml:space="preserve"><value>Password</value></data>
+  <data name="ConfirmPassword" xml:space="preserve"><value>Confirm password</value></data>
+  <data name="UserPasswordHint" xml:space="preserve"><value>Needed for sudo. Leave it empty to use sudo without a password.</value></data>
+  <data name="AdminPassword" xml:space="preserve"><value>Admin (root) password</value></data>
+  <data name="AdminPasswordHint" xml:space="preserve"><value>Password of the root account, e.g. for su -. Leave it empty to keep root login disabled.</value></data>
+  <data name="UserNameInvalid" xml:space="preserve"><value>The user name must start with a lowercase letter or _, contain only lowercase letters, digits, - and _ (at most 32 characters), and cannot be root.</value></data>
+  <data name="PasswordsDoNotMatch" xml:space="preserve"><value>The user passwords do not match.</value></data>
+  <data name="AdminPasswordsDoNotMatch" xml:space="preserve"><value>The admin passwords do not match.</value></data>
+  <data name="PasswordLineBreak" xml:space="preserve"><value>Passwords cannot contain line breaks.</value></data>
+  <data name="LogConfiguringUserFormat" xml:space="preserve"><value>» Setting up user account: {0}</value></data>
 </root>

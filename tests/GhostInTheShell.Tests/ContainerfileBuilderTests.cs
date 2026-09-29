@@ -67,6 +67,34 @@ public class ContainerfileBuilderTests
     }
 
     [Fact]
+    public void Builds_for_the_chosen_user_after_the_shared_root_layers()
+    {
+        var file = ContainerfileBuilder.Build(Catalog, "fedora-43", ["claude"], ["cpp"], "dev");
+        var lines = file.Split('\n');
+
+        var cpp = Array.IndexOf(lines, "# toolchain: cpp");
+        var userAdd = Array.FindIndex(lines, l => l.Contains("useradd -m -s /bin/bash dev"));
+        Assert.True(cpp > 0 && userAdd > cpp, "user-specific layers must not break cache sharing of root layers");
+        Assert.Contains("USER dev", lines);
+        Assert.Contains("WORKDIR /home/dev", lines);
+        Assert.Contains(lines, l => l.StartsWith("ENV PATH=/home/dev/.local/bin:"));
+        Assert.DoesNotContain("/home/agent", file);
+        Assert.DoesNotContain("sudoers", file); // sudo rules depend on the password, set at create time
+    }
+
+    [Theory]
+    [InlineData("~/.local/bin", "/home/dev/.local/bin")]
+    [InlineData("/home/agent/.cargo/bin", "/home/dev/.cargo/bin")] // older user catalogs
+    [InlineData("/opt/tools/bin", "/opt/tools/bin")]
+    [InlineData("/home/agentx/bin", "/home/agentx/bin")]
+    public void ExpandHome_maps_catalog_paths_to_the_user_home(string path, string expected) =>
+        Assert.Equal(expected, ContainerfileBuilder.ExpandHome(path, "/home/dev"));
+
+    [Fact]
+    public void Invalid_user_name_is_rejected_before_it_reaches_a_shell_command() =>
+        Assert.Throws<ArgumentException>(() => ContainerfileBuilder.Build(Catalog, "fedora-43", [], [], "x; rm -rf /"));
+
+    [Fact]
     public void Family_specific_command_is_picked_per_distro()
     {
         Assert.Contains("apt-get install", ContainerfileBuilder.Build(Catalog, "ubuntu-26.04", [], ["python"]));

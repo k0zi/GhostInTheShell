@@ -127,9 +127,9 @@
     }
   ],
   "userPath": [
-    "/home/agent/.local/bin",
-    "/home/agent/.opencode/bin",
-    "/home/agent/.hermes/bin",
-    "/home/agent/.cargo/bin"
+    "~/.local/bin",
+    "~/.opencode/bin",
+    "~/.hermes/bin",
+    "~/.cargo/bin"
   ]
 }

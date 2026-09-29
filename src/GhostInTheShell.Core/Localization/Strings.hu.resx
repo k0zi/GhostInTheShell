@@ -79,4 +79,18 @@ A gép és a /home/agent kötet minden adata véglegesen elvész.</value></data>
   <data name="LogDone" xml:space="preserve"><value>✓ Kész</value></data>
   <data name="LogCachedImageFormat" xml:space="preserve"><value>» Gyorsítótárazott image: {0}</value></data>
   <data name="LogBuildingImageFormat" xml:space="preserve"><value>» Image építése: {0}</value></data>
+  <data name="TabMachine" xml:space="preserve"><value>Gép</value></data>
+  <data name="TabUserAccount" xml:space="preserve"><value>Felhasználói fiók</value></data>
+  <data name="UserName" xml:space="preserve"><value>Felhasználónév</value></data>
+  <data name="UserNameHint" xml:space="preserve"><value>A terminálban ezzel a felhasználóval lépsz be. Saját könyvtára: /home/&lt;név&gt;.</value></data>
+  <data name="Password" xml:space="preserve"><value>Jelszó</value></data>
+  <data name="ConfirmPassword" xml:space="preserve"><value>Jelszó megerősítése</value></data>
+  <data name="UserPasswordHint" xml:space="preserve"><value>Ezzel lehet sudo-t használni. Ha üresen hagyod, a sudo jelszó nélkül működik.</value></data>
+  <data name="AdminPassword" xml:space="preserve"><value>Admin (root) jelszó</value></data>
+  <data name="AdminPasswordHint" xml:space="preserve"><value>A root fiók jelszava, pl. su - parancshoz. Ha üresen hagyod, a root belépés tiltva marad.</value></data>
+  <data name="UserNameInvalid" xml:space="preserve"><value>A felhasználónév kisbetűvel vagy _ jellel kezdődjön, csak kisbetűt, számot, - és _ jelet tartalmazzon (legfeljebb 32 karakter), és nem lehet root.</value></data>
+  <data name="PasswordsDoNotMatch" xml:space="preserve"><value>A felhasználói jelszavak nem egyeznek.</value></data>
+  <data name="AdminPasswordsDoNotMatch" xml:space="preserve"><value>Az admin jelszavak nem egyeznek.</value></data>
+  <data name="PasswordLineBreak" xml:space="preserve"><value>A jelszó nem tartalmazhat sortörést.</value></data>
+  <data name="LogConfiguringUserFormat" xml:space="preserve"><value>» Felhasználói fiók beállítása: {0}</value></data>
 </root>

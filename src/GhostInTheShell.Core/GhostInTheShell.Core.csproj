@@ -5,4 +5,7 @@
   <ItemGroup>
     <EmbeddedResource Include="catalog.json" LogicalName="GhostInTheShell.Core.catalog.json" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="GhostInTheShell.Tests" />
+  </ItemGroup>
 </Project>

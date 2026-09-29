@@ -30,10 +30,10 @@ public partial class CreateMachineView : UserControl
 
     private void TopLevel_SizeChanged(object? sender, SizeChangedEventArgs e) => FitToWindow();
 
-    // The dialog host measures its content with unlimited height, so the scroller needs an explicit cap.
+    // The dialog host measures its content with unlimited height, so the tabs need an explicit cap to scroll.
     private void FitToWindow()
     {
         if (_topLevel is not null)
-            FormScroller.MaxHeight = Math.Max(160, _topLevel.ClientSize.Height - DialogChrome);
+            Tabs.MaxHeight = Math.Max(160, _topLevel.ClientSize.Height - DialogChrome);
     }
 }

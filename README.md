@@ -9,8 +9,9 @@ Built with [Avalonia 12](https://avaloniaui.net/) and [SukiUI](https://github.co
 ## Features
 
 - **Create a machine**: pick a name, Linux distribution, CPU cores, memory, disk size, the coding agents and the development environments to install. The build log streams into the machine's card, and you can cancel the build.
+- **User account** (second tab of the new machine dialog): the login user's name (default `agent`), its password for `sudo`, and the root (admin) password. Without a user password `sudo` works without one; without an admin password root login stays disabled. Passwords are set with `chpasswd` over stdin after the container starts and are never stored by the app, in the image or in labels.
 - **Start / stop / delete**: deleting asks for confirmation and removes the machine together with its home volume.
-- **Open a terminal**: double-click a running machine's card (or use its terminal button) to open a login shell as the `agent` user in your terminal emulator (Ptyxis, GNOME Terminal, Konsole, kitty, Alacritty, Ghostty, WezTerm, xterm, and others).
+- **Open a terminal**: double-click a running machine's card (or use its terminal button) to open a login shell as the machine's user in your terminal emulator (Ptyxis, GNOME Terminal, Konsole, kitty, Alacritty, Ghostty, WezTerm, xterm, and others).
 - **Live status**: the list follows `podman events`, so it also picks up changes you make with the `podman` CLI.
 - **Disk usage**: shows the space each machine uses against its limit, and turns red when a machine goes over it.
 - **Light and dark theme**.
@@ -47,7 +48,7 @@ Built with [Avalonia 12](https://avaloniaui.net/) and [SukiUI](https://github.co
 | Rust | stable toolchain via `rustup` (cargo, rustc, clippy, rustfmt) |
 | Python | pip, venv, pipx, dev headers (distro packages) and [uv](https://docs.astral.sh/uv/) |
 
-Every machine gets Node.js 24 LTS, Python 3, build tools, a passwordless-sudo `agent` user, and these developer tools: git, git-lfs, curl, wget, jq, ripgrep (`rg`), fd, tree, htop, vim, nano, zip/unzip, rsync, an SSH client and gnupg.
+Every machine gets Node.js 24 LTS, Python 3, build tools, a sudo-capable login user, and these developer tools: git, git-lfs, curl, wget, jq, ripgrep (`rg`), fd, tree, htop, vim, nano, zip/unzip, rsync, an SSH client and gnupg.
 
 ## Requirements
 
@@ -74,9 +75,9 @@ The first machine for a given distro and agent combination takes a few minutes t
 ## How it works
 
 1. **Image**: the chosen distro and agents become a Containerfile (`ContainerfileBuilder`). Each agent gets its own layer. The image is tagged by the Containerfile's content hash (`localhost/gits/<os>:<hash>`), so the same selection reuses the image, and any catalog change triggers a rebuild.
-2. **Machine**: a container named `gits-<name>` with `--cpus`, `--memory`, `--init`, and a named volume `gits-<name>-home` mounted at `/home/agent`. Podman copies the image's home directory into the empty volume, so installed agents and your files survive stop, start and image updates.
-3. **State**: there is no database. Each machine's settings are stored as `gits.*` labels on its container, and the app reads them back with `podman ps`.
-4. **Terminal**: `podman exec -it -u agent -w /home/agent gits-<name> bash -l`, placed into a terminal command template.
+2. **Machine**: a container named `gits-<name>` with `--cpus`, `--memory`, `--init`, and a named volume `gits-<name>-home` mounted at `/home/<user>`. Podman copies the image's home directory into the empty volume, so installed agents and your files survive stop, start and image updates.
+3. **State**: there is no database. Each machine's settings (but never its passwords) are stored as `gits.*` labels on its container, and the app reads them back with `podman ps`.
+4. **Terminal**: `podman exec -it -u <user> -w /home/<user> gits-<name> bash -l`, placed into a terminal command template.
 
 ### Disk limits
 
@@ -128,7 +129,7 @@ Install scripts change. To fix or extend them without rebuilding the app, copy [
       "install": "curl -fsSL https://example.com/install.sh | bash",   // runs as the agent user
       "check": "myagent --version" }                                    // fails the build if the install broke
   ],
-  "userPath": [ "/home/agent/.local/bin" ]
+  "userPath": [ "~/.local/bin" ]            // ~ is the machine user's home
 }
 ```
 
@@ -152,5 +153,5 @@ All backend calls go through `IVmProvider`, so you can add another backend (QEMU
 ## Security notes
 
 - The machines are **containers, not VMs**: they share the host kernel. Rootless Podman keeps them isolated from your user account, but they don't give you the isolation of a hypervisor.
-- The `agent` user has passwordless sudo **inside** the container.
+- The login user has sudo **inside** the container: with its password if you set one, otherwise without a password.
 - Agent install scripts are downloaded from their vendors and run at build time. Review `catalog.json` if that matters to you.

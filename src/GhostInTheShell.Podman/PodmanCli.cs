@@ -20,11 +20,24 @@ public class PodmanCli(string executable = "podman")
         return result.StdOut;
     }
 
-    public virtual async Task<PodmanResult> TryRunAsync(IEnumerable<string> args, CancellationToken ct = default)
+    /// <summary>Like <see cref="RunAsync(IEnumerable{string}, CancellationToken)"/>, feeding <paramref name="standardInput"/> to the process.</summary>
+    /// <remarks>Use for secrets: stdin is not visible in the process list the way arguments are.</remarks>
+    public async Task<string> RunAsync(IEnumerable<string> args, string standardInput, CancellationToken ct = default)
+    {
+        var result = await TryRunAsync(args, standardInput, ct);
+        if (result.ExitCode != 0)
+            throw Failure(args, result.ExitCode, result.StdErr);
+        return result.StdOut;
+    }
+
+    public Task<PodmanResult> TryRunAsync(IEnumerable<string> args, CancellationToken ct = default) =>
+        TryRunAsync(args, null, ct);
+
+    public virtual async Task<PodmanResult> TryRunAsync(IEnumerable<string> args, string? standardInput, CancellationToken ct = default)
     {
         var stdout = new StringBuilder();
         var stderr = new StringBuilder();
-        var exit = await ExecuteAsync(args, line => stdout.AppendLine(line), line => stderr.AppendLine(line), ct);
+        var exit = await ExecuteAsync(args, line => stdout.AppendLine(line), line => stderr.AppendLine(line), standardInput, ct);
         return new PodmanResult(exit, stdout.ToString(), stderr.ToString().Trim());
     }
 
@@ -43,12 +56,13 @@ public class PodmanCli(string executable = "podman")
             }
         }
 
-        var exit = await ExecuteAsync(args, Collect, Collect, ct);
+        var exit = await ExecuteAsync(args, Collect, Collect, null, ct);
         if (exit != 0)
             throw Failure(args, exit, string.Join('\n', tail));
     }
 
-    private async Task<int> ExecuteAsync(IEnumerable<string> args, Action<string> onOut, Action<string> onErr, CancellationToken ct)
+    private async Task<int> ExecuteAsync(IEnumerable<string> args, Action<string> onOut, Action<string> onErr,
+        string? standardInput, CancellationToken ct)
     {
         var psi = new ProcessStartInfo(Executable)
         {
@@ -67,6 +81,12 @@ public class PodmanCli(string executable = "podman")
         catch (System.ComponentModel.Win32Exception ex)
         {
             throw new PodmanException(Strings.Format("PodmanStartFailedFormat", Executable, ex.Message), -1, ex.Message);
+        }
+
+        if (standardInput is not null)
+        {
+            try { await process.StandardInput.WriteAsync(standardInput); }
+            catch (IOException) { /* The process exited early; its exit code tells the story. */ }
         }
 
         process.StandardInput.Close();

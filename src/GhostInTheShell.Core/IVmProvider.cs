@@ -19,7 +19,8 @@ public interface IVmProvider
     Task<IReadOnlyList<VmInfo>> ListAsync(bool includeDiskUsage = false, CancellationToken ct = default);
 
     /// <summary>Creates and starts a machine. Build output is reported line by line to <paramref name="log"/>.</summary>
-    Task CreateAsync(VmSpec spec, IProgress<string> log, CancellationToken ct = default);
+    /// <param name="credentials">Passwords applied to the new machine; the provider must not store them.</param>
+    Task CreateAsync(VmSpec spec, VmCredentials credentials, IProgress<string> log, CancellationToken ct = default);
 
     Task StartAsync(string id, CancellationToken ct = default);
 
@@ -29,7 +30,7 @@ public interface IVmProvider
     Task DeleteAsync(string id, CancellationToken ct = default);
 
     /// <summary>The interactive shell command for a running machine; the caller wraps it in a terminal.</summary>
-    ProcessStartInfo GetShellCommand(string id);
+    ProcessStartInfo GetShellCommand(VmInfo machine);
 
     /// <summary>Starts watching for state changes in the background. Stops when <paramref name="ct"/> is cancelled.</summary>
     void StartWatching(CancellationToken ct);

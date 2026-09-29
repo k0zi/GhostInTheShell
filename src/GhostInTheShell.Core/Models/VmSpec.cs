@@ -11,9 +11,15 @@ public sealed partial record VmSpec(
     int DiskGb,
     string OsId,
     IReadOnlyList<string> AgentIds,
-    IReadOnlyList<string> ToolchainIds)
+    IReadOnlyList<string> ToolchainIds,
+    string UserName = VmSpec.DefaultUserName)
 {
+    public const string DefaultUserName = "agent";
+
     public static bool IsValidName(string? name) => name is not null && NamePattern().IsMatch(name);
+
+    /// <summary>A portable Linux login name; <c>root</c> is taken.</summary>
+    public static bool IsValidUserName(string? name) => name is not null && name != "root" && UserNamePattern().IsMatch(name);
 
     /// <summary>Returns the first problem with the spec, or null when it is usable.</summary>
     public string? Validate()
@@ -24,9 +30,13 @@ public sealed partial record VmSpec(
         if (MemoryMb < 256) return Strings.Get("MemoryMin");
         if (DiskGb < 1) return Strings.Get("DiskMin");
         if (string.IsNullOrWhiteSpace(OsId)) return Strings.Get("OsRequired");
+        if (!IsValidUserName(UserName)) return Strings.Get("UserNameInvalid");
         return null;
     }
 
     [GeneratedRegex("^[a-z0-9][a-z0-9-]{1,30}$")]
     private static partial Regex NamePattern();
+
+    [GeneratedRegex("^[a-z_][a-z0-9_-]{0,31}$")]
+    private static partial Regex UserNamePattern();
 }

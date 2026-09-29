@@ -111,4 +111,37 @@ public class PodmanParserTests
         Assert.Contains("gits.toolchains=rust,java", args);
         Assert.Contains("gits.disk-gb=15", args);
     }
+
+    [Fact]
+    public void Create_args_mount_home_and_label_the_user()
+    {
+        var args = PodmanProvider.BuildCreateArgs(new VmSpec("ghost-1", 1, 1024, 5, "manjaro", [], [], "dev"), "img:tag");
+        Assert.Equal("gits-ghost-1-home:/home/dev", args[args.IndexOf("-v") + 1]);
+        Assert.Contains("gits.user=dev", args);
+    }
+
+    [Fact]
+    public void Machines_without_a_user_label_use_the_default_user()
+    {
+        var machines = PodmanParser.ParseContainers(PsJson);
+        Assert.All(machines, m => Assert.Equal("agent", m.Spec.UserName));
+    }
+
+    [Fact]
+    public void Sudo_needs_the_password_only_when_one_was_set()
+    {
+        Assert.Contains("dev ALL=(ALL) NOPASSWD:ALL", PodmanProvider.SudoersCommand("dev", VmCredentials.None));
+        var withPassword = PodmanProvider.SudoersCommand("dev", new VmCredentials("pw", null));
+        Assert.Contains("dev ALL=(ALL) ALL", withPassword);
+        Assert.DoesNotContain("pw", withPassword.Replace("/etc/sudoers.d", ""));
+    }
+
+    [Fact]
+    public void Chpasswd_input_sets_only_the_given_passwords()
+    {
+        Assert.Null(PodmanProvider.ChpasswdInput("dev", VmCredentials.None));
+        Assert.Equal("dev:a:b\n", PodmanProvider.ChpasswdInput("dev", new VmCredentials("a:b", "")));
+        Assert.Equal("dev:u\nroot:r\n", PodmanProvider.ChpasswdInput("dev", new VmCredentials("u", "r")));
+        Assert.Equal("root:r\n", PodmanProvider.ChpasswdInput("dev", new VmCredentials(null, "r")));
+    }
 }

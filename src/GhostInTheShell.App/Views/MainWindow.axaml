@@ -96,6 +96,10 @@
                                                     <TextBlock Text="{Binding OsName}" Opacity="0.8" />
                                                 </StackPanel>
                                                 <StackPanel Orientation="Horizontal" Spacing="4">
+                                                    <mi:MaterialIcon Kind="Account" Opacity="0.7" />
+                                                    <TextBlock Text="{Binding UserName}" Opacity="0.8" />
+                                                </StackPanel>
+                                                <StackPanel Orientation="Horizontal" Spacing="4">
                                                     <mi:MaterialIcon Kind="Memory" Opacity="0.7" />
                                                     <TextBlock Text="{Binding ResourcesText}" Opacity="0.8" />
                                                 </StackPanel>

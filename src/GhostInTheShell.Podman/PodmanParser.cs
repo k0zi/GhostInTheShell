@@ -28,7 +28,9 @@ internal static class PodmanParser
                 labels.GetValueOrDefault(PodmanLabels.Os, ""),
                 List(labels, PodmanLabels.Agents),
                 // Machines made before toolchains existed have no such label.
-                List(labels, PodmanLabels.Toolchains));
+                List(labels, PodmanLabels.Toolchains),
+                // Machines made before the user was configurable all use the default one.
+                labels.GetValueOrDefault(PodmanLabels.User) is { Length: > 0 } user ? user : VmSpec.DefaultUserName);
 
             var containerName = c.GetProperty("Names")[0].GetString()!;
             var state = MapState(c.TryGetProperty("State", out var s) ? s.GetString() : null);

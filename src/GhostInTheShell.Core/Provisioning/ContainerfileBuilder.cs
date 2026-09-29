@@ -10,12 +10,18 @@ namespace GhostInTheShell.Core.Provisioning;
 /// </summary>
 public static class ContainerfileBuilder
 {
-    public const string UserName = "agent";
-    public const string HomeDirectory = "/home/" + UserName;
+    /// <summary>The home directory the catalog's <c>userPath</c> was written against before <c>~</c> was supported.</summary>
+    private const string LegacyHome = "/home/agent";
 
+    public static string HomeDirectory(string userName) => $"/home/{userName}";
+
+    /// <param name="userName">The login user; must already be valid (<see cref="Models.VmSpec.IsValidUserName"/>).</param>
     public static string Build(Catalog.Catalog catalog, string osId, IEnumerable<string> agentIds,
-        IEnumerable<string>? toolchainIds = null)
+        IEnumerable<string>? toolchainIds = null, string userName = Models.VmSpec.DefaultUserName)
     {
+        if (!Models.VmSpec.IsValidUserName(userName))
+            throw new ArgumentException($"Invalid user name: {userName}", nameof(userName));
+        var home = HomeDirectory(userName);
         var os = catalog.GetOs(osId);
         // Catalog order, not click order, so the same selection always yields the same file (and image tag).
         var agents = catalog.Agents.Where(a => agentIds.Contains(a.Id)).ToList();
@@ -34,11 +40,6 @@ public static class ContainerfileBuilder
         foreach (var step in catalog.CommonSetup)
             sb.AppendLine(Run(step));
 
-        sb.AppendLine(Run(
-            $"useradd -m -s /bin/bash {UserName} " +
-            $"&& echo '{UserName} ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/{UserName} " +
-            $"&& chmod 0440 /etc/sudoers.d/{UserName}"));
-
         foreach (var toolchain in toolchains)
         {
             if (toolchain.GetRootCommand(os) is not { } root) continue;
@@ -53,13 +54,22 @@ public static class ContainerfileBuilder
             sb.AppendLine(Run(root));
         }
 
-        var path = string.Join(':', catalog.UserPath.Append("$PATH"));
-        sb.AppendLine($"ENV PATH={path}");
-        // Login shells reset PATH from /etc/profile, so persist it for interactive sessions too.
-        sb.AppendLine(Run($"echo 'export PATH={string.Join(':', catalog.UserPath)}:$PATH' > /etc/profile.d/gits-agent-path.sh"));
+        // The user comes after the shared root layers so machines with different user names still share them.
+        // Sudo rules and passwords are set when the container is created, never baked into the image.
+        sb.AppendLine(Run(
+            $"if id -u {userName} >/dev/null 2>&1; then " +
+            // Some images ship a user already (ubuntu:24.04 has "ubuntu"); reuse it only if it is a normal account.
+            $"[ \"$(getent passwd {userName} | cut -d: -f6)\" = {home} ] || {{ echo '{userName} is a system account' >&2; exit 1; }}; " +
+            $"usermod -s /bin/bash {userName}; " +
+            $"else useradd -m -s /bin/bash {userName}; fi"));
 
-        sb.AppendLine($"USER {UserName}");
-        sb.AppendLine($"WORKDIR {HomeDirectory}");
+        var userPath = catalog.UserPath.Select(p => ExpandHome(p, home)).ToList();
+        sb.AppendLine($"ENV PATH={string.Join(':', userPath.Append("$PATH"))}");
+        // Login shells reset PATH from /etc/profile, so persist it for interactive sessions too.
+        sb.AppendLine(Run($"echo 'export PATH={string.Join(':', userPath)}:$PATH' > /etc/profile.d/gits-agent-path.sh"));
+
+        sb.AppendLine($"USER {userName}");
+        sb.AppendLine($"WORKDIR {home}");
         foreach (var toolchain in toolchains)
         {
             var command = string.Join(" && ", new[] { toolchain.User, toolchain.Check }.Where(c => c is not null));
@@ -84,6 +94,14 @@ public static class ContainerfileBuilder
     {
         var hash = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(containerfile)))[..12];
         return $"localhost/gits/{osId}:{hash}";
+    }
+
+    /// <summary>Resolves <c>~</c> (and the old fixed <c>/home/agent</c>) in a catalog path to the machine user's home.</summary>
+    internal static string ExpandHome(string path, string home)
+    {
+        if (path == "~" || path.StartsWith("~/", StringComparison.Ordinal)) return home + path[1..];
+        if (path == LegacyHome || path.StartsWith(LegacyHome + "/", StringComparison.Ordinal)) return home + path[LegacyHome.Length..];
+        return path;
     }
 
     private static string Run(string command) => $"RUN {command}";

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using GhostInTheShell.Core;
 using GhostInTheShell.Core.Localization;
@@ -94,9 +95,10 @@ public sealed class PodmanProvider(Core.Catalog.Catalog catalog, PodmanCli? cli 
         return volumes.ToDictionary(v => v.Key, v => byPath.GetValueOrDefault(v.Value));
     }
 
-    public async Task CreateAsync(VmSpec spec, IProgress<string> log, CancellationToken ct = default)
+    public async Task CreateAsync(VmSpec spec, VmCredentials credentials, IProgress<string> log, CancellationToken ct = default)
     {
         if (spec.Validate() is { } error) throw new ArgumentException(error, nameof(spec));
+        if (credentials.Validate() is { } credentialsError) throw new ArgumentException(credentialsError, nameof(credentials));
 
         var containerName = PodmanLabels.ContainerName(spec.Name);
         var volumeName = PodmanLabels.HomeVolumeName(spec.Name);
@@ -123,6 +125,9 @@ public sealed class PodmanProvider(Core.Catalog.Catalog catalog, PodmanCli? cli 
 
             log.Report(Strings.Get("LogStarting"));
             await _cli.RunAsync(["start", containerName], ct);
+
+            log.Report(Strings.Format("LogConfiguringUserFormat", spec.UserName));
+            await ConfigureAccountsAsync(containerName, spec.UserName, credentials, ct);
             log.Report(Strings.Get("LogDone"));
         }
         catch
@@ -140,7 +145,7 @@ public sealed class PodmanProvider(Core.Catalog.Catalog catalog, PodmanCli? cli 
 
     private async Task<string> BuildImageAsync(VmSpec spec, IProgress<string> log, CancellationToken ct)
     {
-        var containerfile = ContainerfileBuilder.Build(catalog, spec.OsId, spec.AgentIds, spec.ToolchainIds);
+        var containerfile = ContainerfileBuilder.Build(catalog, spec.OsId, spec.AgentIds, spec.ToolchainIds, spec.UserName);
         var tag = ContainerfileBuilder.ImageTag(spec.OsId, containerfile);
 
         if ((await _cli.TryRunAsync(["image", "exists", tag], ct)).ExitCode == 0)
@@ -164,6 +169,31 @@ public sealed class PodmanProvider(Core.Catalog.Catalog catalog, PodmanCli? cli 
         }
     }
 
+    /// <summary>Sets the sudo rule and passwords as root inside the started container.</summary>
+    private async Task ConfigureAccountsAsync(string containerName, string userName, VmCredentials credentials, CancellationToken ct)
+    {
+        await _cli.RunAsync(["exec", "-u", "root", containerName, "sh", "-c", SudoersCommand(userName, credentials)], ct);
+        if (ChpasswdInput(userName, credentials) is { } input)
+            await _cli.RunAsync(["exec", "-i", "-u", "root", containerName, "chpasswd"], input, ct);
+    }
+
+    /// <summary>With a user password sudo asks for it; without one it stays passwordless, as before.</summary>
+    internal static string SudoersCommand(string userName, VmCredentials credentials)
+    {
+        // userName is validated to [a-z0-9_-], so it is safe inside the shell command.
+        var rule = credentials.HasUserPassword ? $"{userName} ALL=(ALL) ALL" : $"{userName} ALL=(ALL) NOPASSWD:ALL";
+        return $"echo '{rule}' > /etc/sudoers.d/gits-user && chmod 0440 /etc/sudoers.d/gits-user";
+    }
+
+    /// <summary>chpasswd's stdin ("user:password" per line), or null when there is nothing to set.</summary>
+    internal static string? ChpasswdInput(string userName, VmCredentials credentials)
+    {
+        var sb = new StringBuilder();
+        if (credentials.HasUserPassword) sb.Append(userName).Append(':').Append(credentials.UserPassword).Append('\n');
+        if (credentials.HasAdminPassword) sb.Append("root:").Append(credentials.AdminPassword).Append('\n');
+        return sb.Length == 0 ? null : sb.ToString();
+    }
+
     internal static List<string> BuildCreateArgs(VmSpec spec, string image) =>
     [
         "create",
@@ -173,12 +203,13 @@ public sealed class PodmanProvider(Core.Catalog.Catalog catalog, PodmanCli? cli 
         "--cpus", spec.Cpus.ToString(CultureInfo.InvariantCulture),
         "--memory", $"{spec.MemoryMb.ToString(CultureInfo.InvariantCulture)}m",
         // Podman copies the image's home into an empty named volume, so installed agents survive.
-        "-v", $"{PodmanLabels.HomeVolumeName(spec.Name)}:{ContainerfileBuilder.HomeDirectory}",
+        "-v", $"{PodmanLabels.HomeVolumeName(spec.Name)}:{ContainerfileBuilder.HomeDirectory(spec.UserName)}",
         "--label", PodmanLabels.ManagedFilter,
         "--label", $"{PodmanLabels.Name}={spec.Name}",
         "--label", $"{PodmanLabels.Os}={spec.OsId}",
         "--label", $"{PodmanLabels.Agents}={string.Join(',', spec.AgentIds)}",
         "--label", $"{PodmanLabels.Toolchains}={string.Join(',', spec.ToolchainIds)}",
+        "--label", $"{PodmanLabels.User}={spec.UserName}",
         "--label", $"{PodmanLabels.Cpus}={spec.Cpus.ToString(CultureInfo.InvariantCulture)}",
         "--label", $"{PodmanLabels.MemoryMb}={spec.MemoryMb.ToString(CultureInfo.InvariantCulture)}",
         "--label", $"{PodmanLabels.DiskGb}={spec.DiskGb.ToString(CultureInfo.InvariantCulture)}",
@@ -207,10 +238,11 @@ public sealed class PodmanProvider(Core.Catalog.Catalog catalog, PodmanCli? cli 
         RaiseChanged();
     }
 
-    public ProcessStartInfo GetShellCommand(string id)
+    public ProcessStartInfo GetShellCommand(VmInfo machine)
     {
+        var user = machine.Spec.UserName;
         var psi = new ProcessStartInfo(_cli.Executable);
-        foreach (var arg in new[] { "exec", "-it", "-u", ContainerfileBuilder.UserName, "-w", ContainerfileBuilder.HomeDirectory, id, "bash", "-l" })
+        foreach (var arg in new[] { "exec", "-it", "-u", user, "-w", ContainerfileBuilder.HomeDirectory(user), machine.Id, "bash", "-l" })
             psi.ArgumentList.Add(arg);
         return psi;
     }

@@ -162,9 +162,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private async Task NewMachine()
     {
         var names = Machines.Select(m => m.Name).ToHashSet();
-        var spec = await _dialogs.ShowAsync<VmSpec?>(Strings.Get("NewMachine"), null,
+        var request = await _dialogs.ShowAsync<NewMachineRequest?>(Strings.Get("NewMachine"), null,
             complete => new CreateMachineViewModel(_catalog, names, complete));
-        if (spec is null) return;
+        if (request is null) return;
+        var spec = request.Spec;
 
         var cts = new CancellationTokenSource();
         var card = MachineViewModel.Pending(spec, _catalog, cts);
@@ -174,7 +175,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
         try
         {
-            await _provider.CreateAsync(spec, new Progress<string>(card.AppendLog), cts.Token);
+            await _provider.CreateAsync(spec, request.Credentials, new Progress<string>(card.AppendLog), cts.Token);
             Machines.Remove(card);
             ShowToast(NotificationType.Success, Strings.Get("MachineCreated"), Strings.Format("MachineRunningFormat", spec.Name));
         }
@@ -237,7 +238,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     {
         try
         {
-            TerminalLauncher.Launch(TerminalTemplate, _provider.GetShellCommand(card.Id));
+            TerminalLauncher.Launch(TerminalTemplate, _provider.GetShellCommand(card.Info));
         }
         catch (Exception ex)
         {

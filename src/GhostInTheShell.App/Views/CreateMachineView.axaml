@@ -17,7 +17,9 @@
         </StackPanel>
 
         <!-- MaxHeight follows the window (code-behind) so a short window scrolls instead of clipping. -->
-        <ScrollViewer x:Name="FormScroller" HorizontalScrollBarVisibility="Disabled">
+        <TabControl x:Name="Tabs" SelectedIndex="{Binding SelectedTab}" Padding="0 12 0 0">
+            <TabItem Header="{l:Tr TabMachine}">
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled">
             <StackPanel Spacing="14" Margin="0 0 12 0">
                 <Grid ColumnDefinitions="*,24,*">
                     <StackPanel Spacing="4">
@@ -98,5 +100,47 @@
                 </Grid>
             </StackPanel>
         </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="{l:Tr TabUserAccount}">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Spacing="18" Margin="0 0 12 0">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="{l:Tr UserName}" FontWeight="SemiBold" />
+                            <TextBox Text="{Binding UserName}" />
+                            <TextBlock Classes="hint" Text="{l:Tr UserNameHint}" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="4">
+                            <Grid ColumnDefinitions="*,24,*" RowDefinitions="Auto,Auto" RowSpacing="4">
+                                <TextBlock Text="{l:Tr Password}" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="2" Text="{l:Tr ConfirmPassword}" FontWeight="SemiBold" />
+                                <TextBox Grid.Row="1" Text="{Binding UserPassword}" PasswordChar="•" />
+                                <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding UserPasswordConfirm}" PasswordChar="•" />
+                            </Grid>
+                            <TextBlock Classes="hint" Text="{l:Tr UserPasswordHint}" />
+                        </StackPanel>
+
+                        <StackPanel Spacing="4">
+                            <Grid ColumnDefinitions="*,24,*" RowDefinitions="Auto,Auto" RowSpacing="4">
+                                <TextBlock Text="{l:Tr AdminPassword}" FontWeight="SemiBold" />
+                                <TextBlock Grid.Column="2" Text="{l:Tr ConfirmPassword}" FontWeight="SemiBold" />
+                                <TextBox Grid.Row="1" Text="{Binding AdminPassword}" PasswordChar="•" />
+                                <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding AdminPasswordConfirm}" PasswordChar="•" />
+                            </Grid>
+                            <TextBlock Classes="hint" Text="{l:Tr AdminPasswordHint}" />
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
     </DockPanel>
+
+    <UserControl.Styles>
+        <Style Selector="TextBlock.hint">
+            <Setter Property="Opacity" Value="0.6" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+    </UserControl.Styles>
 </UserControl>

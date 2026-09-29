@@ -37,13 +37,19 @@ public sealed partial class ToolchainOption(ToolchainDefinition definition) : Ob
     }
 }
 
-/// <summary>The "new machine" form. Completes with a spec, or null when cancelled.</summary>
+/// <summary>What the "new machine" form produces.</summary>
+public sealed record NewMachineRequest(VmSpec Spec, VmCredentials Credentials);
+
+/// <summary>The "new machine" form. Completes with a request, or null when cancelled.</summary>
 public sealed partial class CreateMachineViewModel : ViewModelBase
 {
-    private readonly Action<VmSpec?> _complete;
+    public const int MachineTab = 0;
+    public const int UserAccountTab = 1;
+
+    private readonly Action<NewMachineRequest?> _complete;
     private readonly IReadOnlySet<string> _existingNames;
 
-    public CreateMachineViewModel(Catalog catalog, IReadOnlySet<string> existingNames, Action<VmSpec?> complete)
+    public CreateMachineViewModel(Catalog catalog, IReadOnlySet<string> existingNames, Action<NewMachineRequest?> complete)
     {
         _complete = complete;
         _existingNames = existingNames;
@@ -77,6 +83,13 @@ public sealed partial class CreateMachineViewModel : ViewModelBase
     [ObservableProperty] private double _diskGb = 20;
     [ObservableProperty] private OsDefinition? _selectedOs;
     [ObservableProperty] private string? _errorText;
+    [ObservableProperty] private int _selectedTab = MachineTab;
+
+    [ObservableProperty] private string _userName = VmSpec.DefaultUserName;
+    [ObservableProperty] private string _userPassword = "";
+    [ObservableProperty] private string _userPasswordConfirm = "";
+    [ObservableProperty] private string _adminPassword = "";
+    [ObservableProperty] private string _adminPasswordConfirm = "";
 
     [RelayCommand]
     private void Create()
@@ -88,11 +101,31 @@ public sealed partial class CreateMachineViewModel : ViewModelBase
             (int)DiskGb,
             SelectedOs?.Id ?? "",
             Agents.Where(a => a.IsSelected).Select(a => a.Definition.Id).ToList(),
-            Toolchains.Where(t => t.IsSelected).Select(t => t.Definition.Id).ToList());
+            Toolchains.Where(t => t.IsSelected).Select(t => t.Definition.Id).ToList(),
+            UserName.Trim());
+        var credentials = new VmCredentials(UserPassword, AdminPassword);
+
+        // Account problems first, and on their own tab, so the message points at fields the user can see.
+        var accountError = !VmSpec.IsValidUserName(spec.UserName) ? Strings.Get("UserNameInvalid")
+            : UserPassword != UserPasswordConfirm ? Strings.Get("PasswordsDoNotMatch")
+            : AdminPassword != AdminPasswordConfirm ? Strings.Get("AdminPasswordsDoNotMatch")
+            : credentials.Validate();
+        if (accountError is not null)
+        {
+            ErrorText = accountError;
+            SelectedTab = UserAccountTab;
+            return;
+        }
 
         ErrorText = spec.Validate()
                     ?? (_existingNames.Contains(spec.Name) ? Strings.Format("NameExistsFormat", spec.Name) : null);
-        if (ErrorText is null) _complete(spec);
+        if (ErrorText is not null)
+        {
+            SelectedTab = MachineTab;
+            return;
+        }
+
+        _complete(new NewMachineRequest(spec, credentials));
     }
 
     [RelayCommand]
