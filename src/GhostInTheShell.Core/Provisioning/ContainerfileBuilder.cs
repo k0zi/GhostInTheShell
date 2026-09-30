@@ -70,6 +70,8 @@ public static class ContainerfileBuilder
 
         sb.AppendLine($"USER {userName}");
         sb.AppendLine($"WORKDIR {home}");
+        foreach (var step in catalog.UserSetup)
+            sb.AppendLine(Run(step));
         foreach (var toolchain in toolchains)
         {
             var command = string.Join(" && ", new[] { toolchain.User, toolchain.Check }.Where(c => c is not null));

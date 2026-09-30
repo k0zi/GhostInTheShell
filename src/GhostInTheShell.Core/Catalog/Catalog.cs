@@ -54,15 +54,20 @@ public static class FamilyCommands
 }
 
 /// <summary>Everything a machine can be built from. Editable as JSON so install commands can be fixed without a rebuild.</summary>
+/// <param name="CommonSetup">Commands run as root on every machine.</param>
+/// <param name="UserSetup">Commands run as the machine user on every machine (shell configuration).</param>
 public sealed record Catalog(
     IReadOnlyList<OsDefinition> OperatingSystems,
     IReadOnlyList<string> CommonSetup,
     IReadOnlyList<AgentDefinition> Agents,
     IReadOnlyList<string> UserPath,
-    IReadOnlyList<ToolchainDefinition>? Toolchains = null)
+    IReadOnlyList<ToolchainDefinition>? Toolchains = null,
+    IReadOnlyList<string>? UserSetup = null)
 {
-    // Older user catalogs have no toolchains section.
+    // Older user catalogs have neither section.
     public IReadOnlyList<ToolchainDefinition> Toolchains { get; init; } = Toolchains ?? [];
+
+    public IReadOnlyList<string> UserSetup { get; init; } = UserSetup ?? [];
 
     public OsDefinition GetOs(string id) =>
         OperatingSystems.FirstOrDefault(o => o.Id == id)

@@ -1,6 +1,6 @@
 # Ghost in the Shell
 
-A desktop manager for creating, starting, stopping, deleting and opening terminals into isolated Linux sandboxes (Ubuntu, Fedora or Manjaro) with coding agents preinstalled (Claude Code, Codex, pi, Hermes, OpenCode). You set the CPU, memory and disk for each sandbox.
+A desktop manager for creating, starting, stopping, deleting and opening terminals into isolated Linux sandboxes (Ubuntu, Fedora or Manjaro) with coding agents (Claude Code, Codex, pi, Hermes, OpenCode) and development environments (C/C++, .NET, Java, Rust, Python) preinstalled. You set the CPU, memory, disk, login user and an optional shared host folder for each sandbox.
 
 Built with [Avalonia 12](https://avaloniaui.net/) and [SukiUI](https://github.com/kikipoulet/SukiUI). The machines run as rootless [Podman](https://podman.io/) containers.
 
@@ -49,7 +49,28 @@ Built with [Avalonia 12](https://avaloniaui.net/) and [SukiUI](https://github.co
 | Rust | stable toolchain via `rustup` (cargo, rustc, clippy, rustfmt) |
 | Python | pip, venv, pipx, dev headers (distro packages) and [uv](https://docs.astral.sh/uv/) |
 
-Every machine gets Node.js 24 LTS, Python 3, build tools, a sudo-capable login user, and these developer tools: git, git-lfs, curl, wget, jq, ripgrep (`rg`), fd, tree, htop, mc (Midnight Commander), vim, nano, zip/unzip, rsync, an SSH client and gnupg.
+These are optional: pick them per machine in the new machine dialog. An option is greyed out when it has no install command for the chosen distribution.
+
+### Developer tools on every machine
+
+Installed on every machine, whatever you select:
+
+| Category | Tools |
+|---|---|
+| Version control | `git`, `git-lfs` |
+| Search and files | `ripgrep` (`rg`), `fd`, `tree`, `file`, `mc` (Midnight Commander) |
+| Editors and pagers | `vim`, `nano`, `less` |
+| Network and transfer | `curl`, `wget`, `rsync`, SSH client (`ssh`, `scp`) |
+| Data and archives | `jq`, `zip`, `unzip`, `xz`, `tar`, `gzip` |
+| Terminal and system | `tmux`, `btop`, `procps` (`ps`, `top`, `free`), `sudo` |
+| Security | `gnupg` (`gpg`), CA certificates |
+| Build | `gcc`, `g++`, `make` (Ubuntu: `build-essential`, Manjaro: `base-devel`) |
+| Prompt | [Oh My Posh](https://ohmyposh.dev), enabled in the user's `~/.bashrc` |
+| Runtimes | Node.js 24 LTS with `npm`, Python 3 with `venv` |
+
+Package names differ between distributions (for example Ubuntu's `fd-find` installs `fdfind`, so the app links `fd` to it); see the `setup` lines in [`catalog.json`](src/GhostInTheShell.Core/catalog.json).
+
+Oh My Posh's default theme uses [Nerd Font](https://www.nerdfonts.com) icons. Fonts are drawn by your terminal on the host, not in the sandbox, so install a Nerd Font on the host and select it in your terminal (for example `sudo pacman -S ttf-meslo-nerd`, or `oh-my-posh font install meslo`). Without one the icons show up as boxes. To turn the prompt off in a machine, remove the `oh-my-posh init` line from `~/.bashrc`.
 
 ## Requirements
 
@@ -75,7 +96,7 @@ The first machine for a given distro and agent combination takes a few minutes t
 
 ## How it works
 
-1. **Image**: the chosen distro and agents become a Containerfile (`ContainerfileBuilder`). Each agent gets its own layer. The image is tagged by the Containerfile's content hash (`localhost/gits/<os>:<hash>`), so the same selection reuses the image, and any catalog change triggers a rebuild.
+1. **Image**: the chosen distro, development environments, agents and login user become a Containerfile (`ContainerfileBuilder`). Each development environment and agent gets its own layer, and the user is created after the shared root layers, so machines with different users still share the build cache. The image is tagged by the Containerfile's content hash (`localhost/gits/<os>:<hash>`), so the same selection reuses the image, and any catalog change triggers a rebuild.
 2. **Machine**: a container named `gits-<name>` with `--cpus`, `--memory`, `--init`, and a named volume `gits-<name>-home` mounted at `/home/<user>`. Podman copies the image's home directory into the empty volume, so installed agents and your files survive stop, start and image updates.
 3. **State**: there is no database. Each machine's settings (but never its passwords) are stored as `gits.*` labels on its container, and the app reads them back with `podman ps`.
 4. **Terminal**: `podman exec -it -u <user> -w /home/<user> gits-<name> bash -l`, placed into a terminal command template.
@@ -91,7 +112,7 @@ Files live in `~/.config/ghostintheshell/`:
 | File | Purpose |
 |---|---|
 | `settings.json` | terminal command template, language and theme (editable from **Settings** in the app) |
-| `catalog.json` | *optional*: replaces the built-in distro and agent catalog |
+| `catalog.json` | *optional*: replaces the built-in catalog of distributions, development environments and agents |
 
 ### Terminal template
 
@@ -116,7 +137,8 @@ Install scripts change. To fix or extend them without rebuilding the app, copy [
       "family": "debian",                  // picks each toolchain's install command
       "setup": "apt-get update && apt-get install -y curl git sudo ..." }
   ],
-  "commonSetup": [ "..." ],               // root commands run on every distro (Node.js install)
+  "commonSetup": [ "..." ],               // root commands run on every distro (Node.js, Oh My Posh)
+  "userSetup": [ "..." ],                 // commands run as the machine user on every distro (shell prompt)
   "toolchains": [
     { "id": "go", "displayName": "Go", "description": "...",
       "root": { "debian": "apt-get update && apt-get install -y golang",   // per family, as root

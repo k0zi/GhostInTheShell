@@ -20,10 +20,33 @@ public class ContainerfileBuilderTests
     [InlineData("ripgrep")]
     [InlineData("jq")]
     [InlineData("mc")]
+    [InlineData("btop")]
+    [InlineData("tmux")]
     public void Every_distro_installs_the_base_developer_tools(string package)
     {
         foreach (var os in Catalog.OperatingSystems)
             Assert.Contains($" {package} ", os.Setup);
+    }
+
+    [Fact]
+    public void Btop_replaces_htop()
+    {
+        foreach (var os in Catalog.OperatingSystems)
+            Assert.DoesNotContain(" htop ", os.Setup);
+    }
+
+    [Fact]
+    public void Oh_my_posh_is_installed_for_everyone_and_enabled_for_the_user()
+    {
+        var file = ContainerfileBuilder.Build(Catalog, "manjaro", [], ["rust"], "dev");
+        var lines = file.Split('\n');
+
+        var install = Array.FindIndex(lines, l => l.Contains("oh-my-posh/releases/latest/download/posh-linux-"));
+        var user = Array.IndexOf(lines, "USER dev");
+        var init = Array.FindIndex(lines, l => l.Contains("oh-my-posh init bash") && l.Contains(">> ~/.bashrc"));
+        var rust = Array.IndexOf(lines, "# toolchain user: rust");
+        Assert.True(install > 0 && install < user, "the binary goes to /usr/local/bin as root");
+        Assert.True(init > user && init < rust, "the prompt is enabled as the user, before toolchains and agents");
     }
 
     [Fact]
@@ -131,6 +154,7 @@ public class ContainerfileBuilderTests
             """;
         var catalog = CatalogLoader.Parse(new MemoryStream(System.Text.Encoding.UTF8.GetBytes(json)));
         Assert.Empty(catalog.Toolchains);
+        Assert.Empty(catalog.UserSetup);
         Assert.Null(catalog.OperatingSystems[0].Family);
     }
 

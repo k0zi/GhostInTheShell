@@ -5,32 +5,36 @@
       "displayName": "Ubuntu 24.04 LTS",
       "image": "docker.io/library/ubuntu:24.04",
       "family": "debian",
-      "setup": "export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -y --no-install-recommends ca-certificates curl git sudo bash procps less nano unzip xz-utils python3 python3-venv build-essential wget jq ripgrep fd-find tree htop mc vim zip openssh-client rsync git-lfs file gnupg && rm -rf /var/lib/apt/lists/* && ln -sf /usr/bin/fdfind /usr/local/bin/fd"
+      "setup": "export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -y --no-install-recommends ca-certificates curl git sudo bash procps less nano unzip xz-utils python3 python3-venv build-essential wget jq ripgrep fd-find tree btop tmux mc vim zip openssh-client rsync git-lfs file gnupg && rm -rf /var/lib/apt/lists/* && ln -sf /usr/bin/fdfind /usr/local/bin/fd"
     },
     {
       "id": "ubuntu-26.04",
       "displayName": "Ubuntu 26.04 LTS",
       "image": "docker.io/library/ubuntu:26.04",
       "family": "debian",
-      "setup": "export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -y --no-install-recommends ca-certificates curl git sudo bash procps less nano unzip xz-utils python3 python3-venv build-essential wget jq ripgrep fd-find tree htop mc vim zip openssh-client rsync git-lfs file gnupg && rm -rf /var/lib/apt/lists/* && ln -sf /usr/bin/fdfind /usr/local/bin/fd"
+      "setup": "export DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get install -y --no-install-recommends ca-certificates curl git sudo bash procps less nano unzip xz-utils python3 python3-venv build-essential wget jq ripgrep fd-find tree btop tmux mc vim zip openssh-client rsync git-lfs file gnupg && rm -rf /var/lib/apt/lists/* && ln -sf /usr/bin/fdfind /usr/local/bin/fd"
     },
     {
       "id": "fedora-43",
       "displayName": "Fedora 43",
       "image": "registry.fedoraproject.org/fedora:43",
       "family": "fedora",
-      "setup": "dnf install -y --allowerasing ca-certificates curl git sudo bash procps-ng less nano unzip xz tar gzip which findutils python3 gcc gcc-c++ make wget jq ripgrep fd-find tree htop mc vim-enhanced zip openssh-clients rsync git-lfs file gnupg2 && dnf clean all"
+      "setup": "dnf install -y --allowerasing ca-certificates curl git sudo bash procps-ng less nano unzip xz tar gzip which findutils python3 gcc gcc-c++ make wget jq ripgrep fd-find tree btop tmux mc vim-enhanced zip openssh-clients rsync git-lfs file gnupg2 && dnf clean all"
     },
     {
       "id": "manjaro",
       "displayName": "Manjaro (rolling)",
       "image": "docker.io/manjarolinux/base:latest",
       "family": "arch",
-      "setup": "pacman-key --init && pacman-key --populate archlinux manjaro && pacman -Syu --noconfirm --needed ca-certificates curl git sudo bash procps-ng less nano unzip xz tar gzip which python base-devel wget jq ripgrep fd tree htop mc vim zip openssh rsync git-lfs file gnupg && pacman -Scc --noconfirm"
+      "setup": "pacman-key --init && pacman-key --populate archlinux manjaro && pacman -Syu --noconfirm --needed ca-certificates curl git sudo bash procps-ng less nano unzip xz tar gzip which python base-devel wget jq ripgrep fd tree btop tmux mc vim zip openssh rsync git-lfs file gnupg && pacman -Scc --noconfirm"
     }
   ],
   "commonSetup": [
-    "arch=$(uname -m); case \"$arch\" in x86_64) arch=x64 ;; aarch64) arch=arm64 ;; esac; tarball=$(curl -fsSL https://nodejs.org/dist/latest-v24.x/SHASUMS256.txt | awk '{print $2}' | grep -E \"^node-v[0-9.]+-linux-$arch\\.tar\\.xz$\"); curl -fsSL \"https://nodejs.org/dist/latest-v24.x/$tarball\" | tar -xJ -C /usr/local --strip-components=1 --exclude=CHANGELOG.md --exclude=LICENSE --exclude=README.md && node --version && npm --version"
+    "arch=$(uname -m); case \"$arch\" in x86_64) arch=x64 ;; aarch64) arch=arm64 ;; esac; tarball=$(curl -fsSL https://nodejs.org/dist/latest-v24.x/SHASUMS256.txt | awk '{print $2}' | grep -E \"^node-v[0-9.]+-linux-$arch\\.tar\\.xz$\"); curl -fsSL \"https://nodejs.org/dist/latest-v24.x/$tarball\" | tar -xJ -C /usr/local --strip-components=1 --exclude=CHANGELOG.md --exclude=LICENSE --exclude=README.md && node --version && npm --version",
+    "arch=$(uname -m); case \"$arch\" in x86_64) arch=amd64 ;; aarch64) arch=arm64 ;; esac; curl -fsSL \"https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/posh-linux-$arch\" -o /usr/local/bin/oh-my-posh && chmod 0755 /usr/local/bin/oh-my-posh && oh-my-posh version"
+  ],
+  "userSetup": [
+    "grep -q 'oh-my-posh init' ~/.bashrc 2>/dev/null || echo '[[ $- == *i* ]] && command -v oh-my-posh >/dev/null && eval \"$(oh-my-posh init bash)\"' >> ~/.bashrc"
   ],
   "toolchains": [
     {
