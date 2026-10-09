@@ -92,6 +92,29 @@ Run the tests:
 dotnet test
 ```
 
+### Install as a system package
+
+`packaging/install.sh` builds a `.deb` or `.rpm` for your distribution and installs it with apt (Debian, Ubuntu), dnf (Fedora, RHEL) or zypper (openSUSE). It needs the .NET 10 SDK to build, but the package is self-contained and doesn't need a .NET runtime.
+
+```bash
+packaging/install.sh               # build and install (asks for sudo)
+packaging/install.sh --no-build    # install the newest package already in artifacts/packages/
+packaging/install.sh --uninstall   # remove it
+```
+
+The app goes to `/usr/lib/ghostintheshell`, with a `ghostintheshell` launcher in `/usr/bin` and a menu entry. The package recommends `podman`, so apt and dnf install it too. Your settings in `~/.config/ghostintheshell/` and your machines stay when you uninstall.
+
+To build only the packages (x86_64), into `artifacts/packages/`:
+
+```bash
+packaging/build-packages.sh                  # tests, then .deb and .rpm
+packaging/build-packages.sh --skip-tests deb # only the .deb, no tests
+```
+
+The script downloads [nfpm](https://nfpm.goreleaser.com) into `artifacts/tools/` (checksum-verified) if it isn't on your `PATH`, so it doesn't need `dpkg-deb` or `rpmbuild`.
+
+**Versions** are `<year>.<month>.<patch>`, e.g. `26.10.3`, from [Nerdbank.GitVersioning](https://github.com/dotnet/Nerdbank.GitVersioning): `version.json` holds the year and month, and the patch is the number of commits since that line last changed. When a new month starts, `build-packages.sh` updates `version.json` to it (commit that change, `--no-bump` skips it). Builds from a branch other than `main` or a `v*` tag get a `~g<commit>` suffix, which sorts before the release of the same version. `dotnet tool restore && dotnet nbgv get-version` shows the current version.
+
 The first machine for a given distro and agent combination takes a few minutes to build. Later machines with the same selection reuse the cached image and start in seconds.
 
 ## How it works

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Ghost in the Shell
+Comment=Manage isolated Linux sandboxes with coding agents preinstalled
+Exec=@BIN@
+Icon=ghostintheshell
+Terminal=false
+Categories=Development;Utility;
+Keywords=sandbox;container;podman;agent;
+StartupWMClass=GhostInTheShell

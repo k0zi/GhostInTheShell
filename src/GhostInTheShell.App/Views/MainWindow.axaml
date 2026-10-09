@@ -7,10 +7,11 @@
                    x:Class="GhostInTheShell.App.Views.MainWindow"
                    x:DataType="vm:MainWindowViewModel"
                    Title="Ghost in the Shell"
+                   Icon="avares://GhostInTheShell/Assets/ghostintheshell.png"
                    Width="1100" Height="720" MinWidth="640" MinHeight="420">
 
     <sukiUi:SukiWindow.LogoContent>
-        <mi:MaterialIcon Kind="Ghost" Width="20" Height="20" />
+        <Image Source="{StaticResource AppLogo}" Width="20" Height="20" />
     </sukiUi:SukiWindow.LogoContent>
 
     <sukiUi:SukiWindow.RightWindowTitleBarControls>
@@ -61,7 +62,6 @@
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12" IsVisible="{Binding IsEmpty}">
                 <mi:MaterialIcon Kind="GhostOffOutline" Width="56" Height="56" Opacity="0.4" />
                 <TextBlock Text="{l:Tr NoMachines}" HorizontalAlignment="Center" Opacity="0.7" />
-                <Button Classes="Flat" Content="{l:Tr CreateFirstMachine}" HorizontalAlignment="Center" Command="{Binding NewMachineCommand}" />
             </StackPanel>
 
             <ScrollViewer>
