@@ -3,13 +3,28 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.VisualTree;
 using GhostInTheShell.App.ViewModels;
-using SukiUI.Controls;
+using KD.Avalonia.Rice.Controls;
 
 namespace GhostInTheShell.App.Views;
 
-public partial class MainWindow : SukiWindow
+public partial class MainWindow : RiceWindow
 {
     public MainWindow() => InitializeComponent();
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        if (e.Key == Key.Escape && DataContext is MainWindowViewModel { Dialogs.Current: { } dialog })
+        {
+            dialog.Dismiss();
+            e.Handled = true;
+        }
+        base.OnKeyDown(e);
+    }
+
+    private void DialogBackground_PointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (DataContext is MainWindowViewModel { Dialogs.Current: { } dialog }) dialog.Dismiss();
+    }
 
     // Follow the build output like a terminal would.
     private void Log_TextChanged(object? sender, TextChangedEventArgs e)

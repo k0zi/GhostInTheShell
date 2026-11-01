@@ -1,234 +1,255 @@
-<sukiUi:SukiWindow xmlns="https://github.com/avaloniaui"
-                   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                   xmlns:sukiUi="clr-namespace:SukiUI.Controls;assembly=SukiUI"
-                   xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-                   xmlns:vm="using:GhostInTheShell.App.ViewModels"
-                   xmlns:l="using:GhostInTheShell.App.Localization"
-                   x:Class="GhostInTheShell.App.Views.MainWindow"
-                   x:DataType="vm:MainWindowViewModel"
-                   Title="Ghost in the Shell"
-                   Icon="avares://GhostInTheShell/Assets/ghostintheshell.png"
-                   Width="1100" Height="720" MinWidth="640" MinHeight="420">
+<rice:RiceWindow xmlns="https://github.com/avaloniaui"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:rice="clr-namespace:KD.Avalonia.Rice.Controls;assembly=KD.Avalonia.Rice"
+                 xmlns:mi="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+                 xmlns:icons="clr-namespace:Material.Icons;assembly=Material.Icons"
+                 xmlns:vm="using:GhostInTheShell.App.ViewModels"
+                 xmlns:services="using:GhostInTheShell.App.Services"
+                 xmlns:l="using:GhostInTheShell.App.Localization"
+                 x:Class="GhostInTheShell.App.Views.MainWindow"
+                 x:DataType="vm:MainWindowViewModel"
+                 Width="1100" Height="720" MinWidth="640" MinHeight="420">
 
-    <sukiUi:SukiWindow.LogoContent>
-        <Image Source="{StaticResource AppLogo}" Width="20" Height="20" />
-    </sukiUi:SukiWindow.LogoContent>
-
-    <sukiUi:SukiWindow.RightWindowTitleBarControls>
-        <StackPanel Orientation="Horizontal" Spacing="4">
+    <rice:RiceWindow.TitleBarContent>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="4">
             <TextBlock Text="{Binding BackendText}" VerticalAlignment="Center" Opacity="0.6" FontSize="12" Margin="0 0 8 0" />
-            <Button Classes="Basic" Command="{Binding ToggleThemeCommand}" ToolTip.Tip="{l:Tr ToggleTheme}">
-                <mi:MaterialIcon Kind="ThemeLightDark" />
-            </Button>
-            <Button Classes="Basic" Command="{Binding OpenSettingsCommand}" ToolTip.Tip="{l:Tr Settings}">
+            <Button Classes="rice-titlebar" Command="{Binding OpenSettingsCommand}" ToolTip.Tip="{l:Tr Settings}">
                 <mi:MaterialIcon Kind="Cog" />
             </Button>
         </StackPanel>
-    </sukiUi:SukiWindow.RightWindowTitleBarControls>
+    </rice:RiceWindow.TitleBarContent>
 
-    <sukiUi:SukiWindow.Hosts>
-        <sukiUi:SukiToastHost Manager="{Binding ToastManager}" />
-        <sukiUi:SukiDialogHost Manager="{Binding DialogManager}" />
-    </sukiUi:SukiWindow.Hosts>
+    <Panel>
+        <DockPanel Margin="24 16 24 24">
+            <!-- Header -->
+            <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0 0 0 16">
+                <StackPanel Spacing="2">
+                    <TextBlock Text="{l:Tr Machines}" FontSize="24" FontWeight="SemiBold" />
+                    <TextBlock Text="{l:Tr AppSubtitle}" Opacity="0.6" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Button Classes="subtle" Command="{Binding RefreshCommand}" ToolTip.Tip="{l:Tr Refresh}">
+                        <mi:MaterialIcon Kind="Refresh" />
+                    </Button>
+                    <Button Classes="accent" Command="{Binding NewMachineCommand}" IsEnabled="{Binding BackendError, Converter={x:Static ObjectConverters.IsNull}}">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <mi:MaterialIcon Kind="Plus" />
+                            <TextBlock Text="{l:Tr NewMachine}" />
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Grid>
 
-    <DockPanel Margin="24 16 24 24">
-        <!-- Header -->
-        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0 0 0 16">
-            <StackPanel Spacing="2">
-                <TextBlock Text="{l:Tr Machines}" FontSize="24" FontWeight="SemiBold" />
-                <TextBlock Text="{l:Tr AppSubtitle}" Opacity="0.6" />
-            </StackPanel>
-            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                <Button Classes="Basic" Command="{Binding RefreshCommand}" ToolTip.Tip="{l:Tr Refresh}">
-                    <mi:MaterialIcon Kind="Refresh" />
-                </Button>
-                <Button Classes="Flat" Command="{Binding NewMachineCommand}" IsEnabled="{Binding BackendError, Converter={x:Static ObjectConverters.IsNull}}">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <mi:MaterialIcon Kind="Plus" />
-                        <TextBlock Text="{l:Tr NewMachine}" />
-                    </StackPanel>
-                </Button>
-            </StackPanel>
-        </Grid>
+            <rice:RiceInfoBar DockPanel.Dock="Top" Margin="0 0 0 12" Kind="Error" IsClosable="False"
+                              Title="{l:Tr BackendUnavailable}" Message="{Binding BackendError}"
+                              IsOpen="{Binding BackendError, Converter={x:Static ObjectConverters.IsNotNull}}" />
+            <rice:RiceInfoBar DockPanel.Dock="Top" Margin="0 0 0 12" Kind="Warning"
+                              Title="{l:Tr Note}" Message="{Binding BackendWarning}"
+                              IsOpen="{Binding IsBackendWarningOpen, Mode=TwoWay}" />
 
-        <sukiUi:InfoBar DockPanel.Dock="Top" Margin="0 0 0 12" Severity="Error" IsClosable="False"
-                        Title="{l:Tr BackendUnavailable}" Message="{Binding BackendError}"
-                        IsVisible="{Binding BackendError, Converter={x:Static ObjectConverters.IsNotNull}}" />
-        <sukiUi:InfoBar DockPanel.Dock="Top" Margin="0 0 0 12" Severity="Warning" IsClosable="True"
-                        Title="{l:Tr Note}" Message="{Binding BackendWarning}"
-                        IsVisible="{Binding BackendWarning, Converter={x:Static ObjectConverters.IsNotNull}}" />
+            <Panel>
+                <rice:RiceEmptyState Icon="{x:Static icons:MaterialIconKind.GhostOffOutline}" Title="{l:Tr NoMachines}" IsVisible="{Binding IsEmpty}">
+                    <Button Classes="accent" Command="{Binding NewMachineCommand}" HorizontalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <mi:MaterialIcon Kind="Plus" />
+                            <TextBlock Text="{l:Tr NewMachine}" />
+                        </StackPanel>
+                    </Button>
+                </rice:RiceEmptyState>
 
-        <Panel>
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12" IsVisible="{Binding IsEmpty}">
-                <mi:MaterialIcon Kind="GhostOffOutline" Width="56" Height="56" Opacity="0.4" />
-                <TextBlock Text="{l:Tr NoMachines}" HorizontalAlignment="Center" Opacity="0.7" />
-            </StackPanel>
+                <!-- Outline of the cards until the first listing arrives. -->
+                <StackPanel Spacing="12" Margin="4" IsVisible="{Binding IsLoading}">
+                    <rice:RiceCard Padding="16">
+                        <Grid ColumnDefinitions="Auto,*">
+                            <rice:RiceSkeleton Shape="Circle" Width="12" Height="12" Margin="0 4 12 0" VerticalAlignment="Top" />
+                            <rice:RiceSkeleton Grid.Column="1" Shape="Text" Lines="2" LineHeight="14" />
+                        </Grid>
+                    </rice:RiceCard>
+                    <rice:RiceCard Padding="16">
+                        <Grid ColumnDefinitions="Auto,*">
+                            <rice:RiceSkeleton Shape="Circle" Width="12" Height="12" Margin="0 4 12 0" VerticalAlignment="Top" />
+                            <rice:RiceSkeleton Grid.Column="1" Shape="Text" Lines="2" LineHeight="14" />
+                        </Grid>
+                    </rice:RiceCard>
+                </StackPanel>
 
-            <ScrollViewer>
-                <ItemsControl ItemsSource="{Binding Machines}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <StackPanel Spacing="12" />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="vm:MachineViewModel">
-                            <sukiUi:GlassCard Padding="16" DoubleTapped="Card_DoubleTapped">
-                                <StackPanel Spacing="10">
-                                    <Grid ColumnDefinitions="Auto,*,Auto">
-                                        <!-- State dot -->
-                                        <Ellipse Width="12" Height="12" Margin="0 0 12 0" VerticalAlignment="Center"
-                                                 Classes.running="{Binding IsRunning}"
-                                                 Classes.stopped="{Binding IsStopped}"
-                                                 Classes.creating="{Binding IsCreating}"
-                                                 Classes.failed="{Binding IsFailed}" />
+                <!-- Hidden while empty: it is above the empty state and would swallow its clicks. -->
+                <ScrollViewer IsVisible="{Binding !IsEmpty}">
+                    <ItemsControl ItemsSource="{Binding Machines}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <!-- The margin leaves room for the card shadows. -->
+                                <StackPanel Spacing="12" Margin="4" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:MachineViewModel">
+                                <rice:RiceCard Padding="16" DoubleTapped="Card_DoubleTapped">
+                                    <StackPanel Spacing="10">
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <!-- State dot -->
+                                            <Ellipse Width="12" Height="12" Margin="0 0 12 0" VerticalAlignment="Center"
+                                                     Classes.running="{Binding IsRunning}"
+                                                     Classes.stopped="{Binding IsStopped}"
+                                                     Classes.creating="{Binding IsCreating}"
+                                                     Classes.failed="{Binding IsFailed}" />
 
-                                        <StackPanel Grid.Column="1" Spacing="4">
-                                            <StackPanel Orientation="Horizontal" Spacing="10">
-                                                <TextBlock Text="{Binding Name}" FontSize="17" FontWeight="SemiBold" VerticalAlignment="Center" />
-                                                <TextBlock Text="{Binding StateText}" Opacity="0.7" VerticalAlignment="Center" />
-                                                <ProgressBar IsIndeterminate="True" Width="80" VerticalAlignment="Center"
-                                                             IsVisible="{Binding IsCreating}" />
+                                            <StackPanel Grid.Column="1" Spacing="4">
+                                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                                    <TextBlock Text="{Binding Name}" FontSize="17" FontWeight="SemiBold" VerticalAlignment="Center" />
+                                                    <TextBlock Text="{Binding StateText}" Opacity="0.7" VerticalAlignment="Center" />
+                                                    <ProgressBar IsIndeterminate="True" Width="80" VerticalAlignment="Center"
+                                                                 IsVisible="{Binding IsCreating}" />
+                                                </StackPanel>
+                                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                                        <mi:MaterialIcon Kind="Linux" Opacity="0.7" />
+                                                        <TextBlock Text="{Binding OsName}" Opacity="0.8" />
+                                                    </StackPanel>
+                                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                                        <mi:MaterialIcon Kind="Account" Opacity="0.7" />
+                                                        <TextBlock Text="{Binding UserName}" Opacity="0.8" />
+                                                    </StackPanel>
+                                                    <StackPanel Orientation="Horizontal" Spacing="4"
+                                                                IsVisible="{Binding HostFolder, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                                ToolTip.Tip="{Binding HostFolder, StringFormat='{}{0} → ~/host'}">
+                                                        <mi:MaterialIcon Kind="FolderNetworkOutline" Opacity="0.7" />
+                                                        <TextBlock Text="{Binding HostFolder}" Opacity="0.8" MaxWidth="240" TextTrimming="CharacterEllipsis" />
+                                                    </StackPanel>
+                                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                                        <mi:MaterialIcon Kind="Memory" Opacity="0.7" />
+                                                        <TextBlock Text="{Binding ResourcesText}" Opacity="0.8" />
+                                                    </StackPanel>
+                                                    <TextBlock Text="{Binding UsageText}" Opacity="0.8"
+                                                               Classes.over="{Binding IsOverDiskLimit}"
+                                                               IsVisible="{Binding UsageText, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                                                </StackPanel>
+                                                <ItemsControl ItemsSource="{Binding AgentNames}" IsVisible="{Binding HasAgents}" Margin="0 2 0 0">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <WrapPanel />
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate x:DataType="x:String">
+                                                            <Border Classes="badge">
+                                                                <TextBlock Text="{Binding}" FontSize="12" />
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                                <ItemsControl ItemsSource="{Binding ToolchainNames}" IsVisible="{Binding HasToolchains}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <WrapPanel />
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate x:DataType="x:String">
+                                                            <Border Classes="badge toolchain">
+                                                                <TextBlock Text="{Binding}" FontSize="12" />
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
                                             </StackPanel>
-                                            <StackPanel Orientation="Horizontal" Spacing="12">
-                                                <StackPanel Orientation="Horizontal" Spacing="4">
-                                                    <mi:MaterialIcon Kind="Linux" Opacity="0.7" />
-                                                    <TextBlock Text="{Binding OsName}" Opacity="0.8" />
-                                                </StackPanel>
-                                                <StackPanel Orientation="Horizontal" Spacing="4">
-                                                    <mi:MaterialIcon Kind="Account" Opacity="0.7" />
-                                                    <TextBlock Text="{Binding UserName}" Opacity="0.8" />
-                                                </StackPanel>
-                                                <StackPanel Orientation="Horizontal" Spacing="4"
-                                                            IsVisible="{Binding HostFolder, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                            ToolTip.Tip="{Binding HostFolder, StringFormat='{}{0} → ~/host'}">
-                                                    <mi:MaterialIcon Kind="FolderNetworkOutline" Opacity="0.7" />
-                                                    <TextBlock Text="{Binding HostFolder}" Opacity="0.8" MaxWidth="240" TextTrimming="CharacterEllipsis" />
-                                                </StackPanel>
-                                                <StackPanel Orientation="Horizontal" Spacing="4">
-                                                    <mi:MaterialIcon Kind="Memory" Opacity="0.7" />
-                                                    <TextBlock Text="{Binding ResourcesText}" Opacity="0.8" />
-                                                </StackPanel>
-                                                <TextBlock Text="{Binding UsageText}" Opacity="0.8"
-                                                           Classes.over="{Binding IsOverDiskLimit}"
-                                                           IsVisible="{Binding UsageText, Converter={x:Static ObjectConverters.IsNotNull}}" />
+
+                                            <!-- Actions -->
+                                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                <Button Classes="subtle" ToolTip.Tip="{l:Tr OpenTerminal}"
+                                                        IsVisible="{Binding !IsCreating}" IsEnabled="{Binding CanOpenTerminal}"
+                                                        Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).OpenTerminalCommand}"
+                                                        CommandParameter="{Binding}">
+                                                    <mi:MaterialIcon Kind="Console" />
+                                                </Button>
+                                                <Button Classes="subtle" ToolTip.Tip="{l:Tr Start}"
+                                                        IsVisible="{Binding CanStart}"
+                                                        Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).StartCommand}"
+                                                        CommandParameter="{Binding}">
+                                                    <mi:MaterialIcon Kind="Play" />
+                                                </Button>
+                                                <Button Classes="subtle" ToolTip.Tip="{l:Tr Stop}"
+                                                        IsVisible="{Binding IsRunning}" IsEnabled="{Binding CanStop}"
+                                                        Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).StopCommand}"
+                                                        CommandParameter="{Binding}">
+                                                    <mi:MaterialIcon Kind="Stop" />
+                                                </Button>
+                                                <Button Classes="subtle" ToolTip.Tip="{l:Tr Log}"
+                                                        IsVisible="{Binding State, Converter={x:Static vm:Converters.IsCreatingState}}"
+                                                        Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).ToggleLogCommand}"
+                                                        CommandParameter="{Binding}">
+                                                    <mi:MaterialIcon Kind="TextBoxOutline" />
+                                                </Button>
+                                                <Button Classes="subtle" ToolTip.Tip="{l:Tr Abort}"
+                                                        IsVisible="{Binding IsCreating}"
+                                                        Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).CancelCreateCommand}"
+                                                        CommandParameter="{Binding}">
+                                                    <mi:MaterialIcon Kind="Cancel" />
+                                                </Button>
+                                                <Button Classes="subtle" ToolTip.Tip="{l:Tr Dismiss}"
+                                                        IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                        Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).DismissCommand}"
+                                                        CommandParameter="{Binding}">
+                                                    <mi:MaterialIcon Kind="Close" />
+                                                </Button>
+                                                <Button Classes="subtle danger" ToolTip.Tip="{l:Tr Delete}"
+                                                        IsVisible="{Binding !IsCreating}" IsEnabled="{Binding CanDelete}"
+                                                        Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).DeleteCommand}"
+                                                        CommandParameter="{Binding}">
+                                                    <mi:MaterialIcon Kind="Delete" />
+                                                </Button>
                                             </StackPanel>
-                                            <ItemsControl ItemsSource="{Binding AgentNames}" IsVisible="{Binding HasAgents}" Margin="0 2 0 0">
-                                                <ItemsControl.ItemsPanel>
-                                                    <ItemsPanelTemplate>
-                                                        <WrapPanel />
-                                                    </ItemsPanelTemplate>
-                                                </ItemsControl.ItemsPanel>
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate x:DataType="x:String">
-                                                        <Border Classes="badge">
-                                                            <TextBlock Text="{Binding}" FontSize="12" />
-                                                        </Border>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                            <ItemsControl ItemsSource="{Binding ToolchainNames}" IsVisible="{Binding HasToolchains}">
-                                                <ItemsControl.ItemsPanel>
-                                                    <ItemsPanelTemplate>
-                                                        <WrapPanel />
-                                                    </ItemsPanelTemplate>
-                                                </ItemsControl.ItemsPanel>
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate x:DataType="x:String">
-                                                        <Border Classes="badge toolchain">
-                                                            <TextBlock Text="{Binding}" FontSize="12" />
-                                                        </Border>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                        </StackPanel>
+                                        </Grid>
 
-                                        <!-- Actions -->
-                                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                            <Button Classes="Basic" ToolTip.Tip="{l:Tr OpenTerminal}"
-                                                    IsVisible="{Binding !IsCreating}" IsEnabled="{Binding CanOpenTerminal}"
-                                                    Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).OpenTerminalCommand}"
-                                                    CommandParameter="{Binding}">
-                                                <mi:MaterialIcon Kind="Console" />
-                                            </Button>
-                                            <Button Classes="Basic" ToolTip.Tip="{l:Tr Start}"
-                                                    IsVisible="{Binding CanStart}"
-                                                    Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).StartCommand}"
-                                                    CommandParameter="{Binding}">
-                                                <mi:MaterialIcon Kind="Play" />
-                                            </Button>
-                                            <Button Classes="Basic" ToolTip.Tip="{l:Tr Stop}"
-                                                    IsVisible="{Binding IsRunning}" IsEnabled="{Binding CanStop}"
-                                                    Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).StopCommand}"
-                                                    CommandParameter="{Binding}">
-                                                <mi:MaterialIcon Kind="Stop" />
-                                            </Button>
-                                            <Button Classes="Basic" ToolTip.Tip="{l:Tr Log}"
-                                                    IsVisible="{Binding State, Converter={x:Static vm:Converters.IsCreatingState}}"
-                                                    Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).ToggleLogCommand}"
-                                                    CommandParameter="{Binding}">
-                                                <mi:MaterialIcon Kind="TextBoxOutline" />
-                                            </Button>
-                                            <Button Classes="Basic" ToolTip.Tip="{l:Tr Abort}"
-                                                    IsVisible="{Binding IsCreating}"
-                                                    Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).CancelCreateCommand}"
-                                                    CommandParameter="{Binding}">
-                                                <mi:MaterialIcon Kind="Cancel" />
-                                            </Button>
-                                            <Button Classes="Basic" ToolTip.Tip="{l:Tr Dismiss}"
-                                                    IsVisible="{Binding Error, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                    Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).DismissCommand}"
-                                                    CommandParameter="{Binding}">
-                                                <mi:MaterialIcon Kind="Close" />
-                                            </Button>
-                                            <Button Classes="Basic Danger" ToolTip.Tip="{l:Tr Delete}"
-                                                    IsVisible="{Binding !IsCreating}" IsEnabled="{Binding CanDelete}"
-                                                    Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).DeleteCommand}"
-                                                    CommandParameter="{Binding}">
-                                                <mi:MaterialIcon Kind="Delete" />
-                                            </Button>
-                                        </StackPanel>
-                                    </Grid>
+                                        <TextBox Classes="log" IsReadOnly="True" Text="{Binding Log}"
+                                                 IsVisible="{Binding IsLogVisible}"
+                                                 TextChanged="Log_TextChanged" />
+                                    </StackPanel>
+                                </rice:RiceCard>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Panel>
+        </DockPanel>
 
-                                    <TextBox Classes="log" IsReadOnly="True" Text="{Binding Log}"
-                                             IsVisible="{Binding IsLogVisible}"
-                                             TextChanged="Log_TextChanged" />
-                                </StackPanel>
-                            </sukiUi:GlassCard>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
+        <!-- Dialog layer: clicking the dimmed background dismisses the dialog. -->
+        <Panel IsVisible="{Binding Dialogs.Current, Converter={x:Static ObjectConverters.IsNotNull}}">
+            <Border Background="{DynamicResource RiceOverlayBrush}" PointerPressed="DialogBackground_PointerPressed" />
+            <rice:RiceCard DataContext="{Binding Dialogs.Current}" x:DataType="services:DialogRequest"
+                           Header="{Binding Title}" Content="{Binding Content}"
+                           Elevation="3" Padding="20" Margin="24"
+                           HorizontalAlignment="Center" VerticalAlignment="Center" />
         </Panel>
-    </DockPanel>
+    </Panel>
 
-    <sukiUi:SukiWindow.Styles>
+    <rice:RiceWindow.Styles>
         <Style Selector="Ellipse">
             <Setter Property="Fill" Value="Gray" />
         </Style>
         <Style Selector="Ellipse.running">
-            <Setter Property="Fill" Value="#22C55E" />
+            <Setter Property="Fill" Value="{DynamicResource RiceSuccessBrush}" />
         </Style>
         <Style Selector="Ellipse.creating">
-            <Setter Property="Fill" Value="#3B82F6" />
+            <Setter Property="Fill" Value="{DynamicResource RiceAccentBrush}" />
         </Style>
         <Style Selector="Ellipse.failed">
-            <Setter Property="Fill" Value="#EF4444" />
+            <Setter Property="Fill" Value="{DynamicResource RiceDangerBrush}" />
         </Style>
         <Style Selector="TextBlock.over">
-            <Setter Property="Foreground" Value="#EF4444" />
+            <Setter Property="Foreground" Value="{DynamicResource RiceDangerBrush}" />
             <Setter Property="Opacity" Value="1" />
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
         <Style Selector="Border.badge">
-            <Setter Property="Background" Value="{DynamicResource SukiPrimaryColor25}" />
+            <Setter Property="Background" Value="{DynamicResource RiceSurfaceAltBrush}" />
             <Setter Property="CornerRadius" Value="8" />
             <Setter Property="Padding" Value="8 2" />
             <Setter Property="Margin" Value="0 0 6 0" />
         </Style>
         <Style Selector="Border.badge.toolchain">
             <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderBrush" Value="{DynamicResource SukiPrimaryColor75}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource RiceAccentBrush}" />
             <Setter Property="BorderThickness" Value="1" />
         </Style>
         <Style Selector="TextBox.log">
@@ -238,5 +259,5 @@
             <Setter Property="TextWrapping" Value="NoWrap" />
             <Setter Property="AcceptsReturn" Value="True" />
         </Style>
-    </sukiUi:SukiWindow.Styles>
-</sukiUi:SukiWindow>
+    </rice:RiceWindow.Styles>
+</rice:RiceWindow>

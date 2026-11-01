@@ -1,6 +1,4 @@
 using System.Collections.ObjectModel;
-using Avalonia.Controls.Notifications;
-using Avalonia.Styling;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -9,9 +7,8 @@ using GhostInTheShell.Core;
 using GhostInTheShell.Core.Catalog;
 using GhostInTheShell.Core.Localization;
 using GhostInTheShell.Core.Models;
-using SukiUI;
-using SukiUI.Dialogs;
-using SukiUI.Toasts;
+using KD.Avalonia.Rice.Notifications;
+using KD.Avalonia.Rice.Theming;
 
 namespace GhostInTheShell.App.ViewModels;
 
@@ -28,15 +25,12 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private DateTimeOffset _lastDiskUsage = DateTimeOffset.MinValue;
     private CancellationToken _appLifetime;
 
-    public MainWindowViewModel(IVmProvider provider, Catalog catalog, SettingsService settings, DialogService dialogs,
-        ISukiDialogManager dialogManager, ISukiToastManager toastManager)
+    public MainWindowViewModel(IVmProvider provider, Catalog catalog, SettingsService settings, DialogService dialogs)
     {
         _provider = provider;
         _catalog = catalog;
         _settings = settings;
         _dialogs = dialogs;
-        DialogManager = dialogManager;
-        ToastManager = toastManager;
 
         // podman events fire several times per state change; coalesce them into one refresh.
         _refreshDebounce = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(300) };
@@ -63,9 +57,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         };
     }
 
-    public ISukiDialogManager DialogManager { get; }
-
-    public ISukiToastManager ToastManager { get; }
+    public DialogService Dialogs => _dialogs;
 
     public ObservableCollection<MachineViewModel> Machines { get; } = [];
 
@@ -79,6 +71,18 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     partial void OnIsLoadingChanged(bool value) => OnPropertyChanged(nameof(IsEmpty));
 
     partial void OnBackendErrorChanged(string? value) => OnPropertyChanged(nameof(IsEmpty));
+
+    /// <summary>Bound two-way to the warning bar: its close button dismisses the warning.</summary>
+    public bool IsBackendWarningOpen
+    {
+        get => BackendWarning is not null;
+        set
+        {
+            if (!value) BackendWarning = null;
+        }
+    }
+
+    partial void OnBackendWarningChanged(string? value) => OnPropertyChanged(nameof(IsBackendWarningOpen));
 
     public async Task InitializeAsync(CancellationToken appLifetime)
     {
@@ -177,12 +181,12 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         {
             await _provider.CreateAsync(spec, request.Credentials, new Progress<string>(card.AppendLog), cts.Token);
             Machines.Remove(card);
-            ShowToast(NotificationType.Success, Strings.Get("MachineCreated"), Strings.Format("MachineRunningFormat", spec.Name));
+            RiceToast.ShowSuccess(Strings.Format("MachineRunningFormat", spec.Name), Strings.Get("MachineCreated"));
         }
         catch (OperationCanceledException)
         {
             Machines.Remove(card);
-            ShowToast(NotificationType.Information, Strings.Get("CreateCancelled"), spec.Name);
+            RiceToast.ShowInfo(spec.Name, Strings.Get("CreateCancelled"));
         }
         catch (Exception ex)
         {
@@ -249,20 +253,18 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task OpenSettings()
     {
+        var theme = ThemeManager.Instance.CurrentTheme;
         var result = await _dialogs.ShowAsync<SettingsResult?>(Strings.Get("Settings"), null,
             complete => new SettingsViewModel(TerminalTemplate, Strings.Culture.Name, complete));
-        if (result is null) return;
+        if (result is null)
+        {
+            // The theme selector applies (and saves) the choice right away, so undo it on cancel.
+            ThemeManager.Instance.SetTheme(theme);
+            return;
+        }
 
         _settings.Save(_settings.Current with { TerminalTemplate = result.TerminalTemplate, Language = result.Language });
         Strings.SetLanguage(result.Language);
-    }
-
-    [RelayCommand]
-    private void ToggleTheme()
-    {
-        var dark = SukiTheme.GetInstance().ActiveBaseTheme != ThemeVariant.Dark;
-        SukiTheme.GetInstance().ChangeBaseTheme(dark ? ThemeVariant.Dark : ThemeVariant.Light);
-        _settings.Save(_settings.Current with { DarkTheme = dark });
     }
 
     private string TerminalTemplate => _settings.Current.TerminalTemplate ?? TerminalLauncher.DetectDefaultTemplate();
@@ -285,14 +287,5 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         }
     }
 
-    private void ShowError(string title, Exception ex) => ShowToast(NotificationType.Error, title, ex.Message);
-
-    private void ShowToast(NotificationType type, string title, string message) =>
-        ToastManager.CreateToast()
-            .WithTitle(title)
-            .WithContent(message)
-            .OfType(type)
-            .Dismiss().After(TimeSpan.FromSeconds(type == NotificationType.Error ? 10 : 4))
-            .Dismiss().ByClicking()
-            .Queue();
+    private static void ShowError(string title, Exception ex) => RiceToast.ShowError(ex.Message, title);
 }

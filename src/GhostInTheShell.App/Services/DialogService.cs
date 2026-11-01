@@ -1,12 +1,17 @@
 using Avalonia.Controls;
+using CommunityToolkit.Mvvm.ComponentModel;
 using GhostInTheShell.Core.Localization;
-using SukiUI.Dialogs;
 
 namespace GhostInTheShell.App.Services;
 
-/// <summary>Awaitable wrappers around SukiUI dialogs.</summary>
-public sealed class DialogService(ISukiDialogManager manager)
+/// <summary>The dialog on screen; <see cref="Dismiss"/> closes it with its dismissed result.</summary>
+public sealed record DialogRequest(string Title, object Content, Action Dismiss);
+
+/// <summary>Awaitable dialogs, shown by the dialog layer of the main window.</summary>
+public sealed partial class DialogService : ObservableObject
 {
+    [ObservableProperty] private DialogRequest? _current;
+
     public Task<bool> ConfirmAsync(string title, string message, string confirmText) =>
         ShowAsync<bool>(title, false, complete =>
         {
@@ -20,7 +25,7 @@ public sealed class DialogService(ISukiDialogManager manager)
             };
             var cancel = new Button { Content = Strings.Get("Cancel") };
             cancel.Click += (_, _) => complete(false);
-            var ok = new Button { Content = confirmText, Classes = { "Flat", "Danger" } };
+            var ok = new Button { Content = confirmText, Classes = { "danger" } };
             ok.Click += (_, _) => complete(true);
             buttons.Children.Add(cancel);
             buttons.Children.Add(ok);
@@ -32,20 +37,18 @@ public sealed class DialogService(ISukiDialogManager manager)
     public Task<T> ShowAsync<T>(string title, T dismissedResult, Func<Action<T>, object> content)
     {
         var tcs = new TaskCompletionSource<T>();
-        SukiDialogBuilder? builder = null;
+        DialogRequest? request = null;
 
         void Complete(T result)
         {
-            tcs.TrySetResult(result);
-            if (builder is not null) manager.TryDismissDialog(builder.Dialog);
+            if (!tcs.TrySetResult(result)) return;
+            if (Current == request) Current = null;
         }
 
-        builder = manager.CreateDialog()
-            .WithTitle(title)
-            .WithContent(content(Complete))
-            .Dismiss().ByClickingBackground()
-            .OnDismissed(_ => tcs.TrySetResult(dismissedResult));
-        builder.TryShow();
+        // One dialog at a time: a new one dismisses the previous.
+        Current?.Dismiss();
+        request = new DialogRequest(title, content(Complete), () => Complete(dismissedResult));
+        Current = request;
         return tcs.Task;
     }
 }

@@ -2,7 +2,7 @@
 
 A desktop manager for creating, starting, stopping, deleting and opening terminals into isolated Linux sandboxes (Ubuntu, Fedora or Manjaro) with coding agents (Claude Code, Codex, pi, Hermes, OpenCode) and development environments (C/C++, .NET, Java, Rust, Python) preinstalled. You set the CPU, memory, disk, login user and an optional shared host folder for each sandbox.
 
-Built with [Avalonia 12](https://avaloniaui.net/) and [SukiUI](https://github.com/kikipoulet/SukiUI). The machines run as rootless [Podman](https://podman.io/) containers.
+Built with [Avalonia 12](https://avaloniaui.net/) and [KD.Avalonia.Rice](https://github.com/k0zi/KD.Avalonia.Rice). The machines run as rootless [Podman](https://podman.io/) containers.
 
 ![Main window](docs/screenshot.png)
 
@@ -189,7 +189,7 @@ UI text lives in [`src/GhostInTheShell.Core/Localization`](src/GhostInTheShell.C
 src/
   GhostInTheShell.Core/     models, IVmProvider, catalog, Containerfile generation (no UI)
   GhostInTheShell.Podman/   PodmanProvider — drives the podman CLI
-  GhostInTheShell.App/      Avalonia + SukiUI desktop app (MVVM, CommunityToolkit.Mvvm)
+  GhostInTheShell.App/      Avalonia + KD.Avalonia.Rice desktop app (MVVM, CommunityToolkit.Mvvm)
 tests/
   GhostInTheShell.Tests/    xUnit tests
 ```

@@ -9,10 +9,9 @@ using GhostInTheShell.Core;
 using GhostInTheShell.Core.Catalog;
 using GhostInTheShell.Core.Localization;
 using GhostInTheShell.Podman;
+using KD.Avalonia.Rice;
+using KD.Avalonia.Rice.Theming;
 using Microsoft.Extensions.DependencyInjection;
-using SukiUI;
-using SukiUI.Dialogs;
-using SukiUI.Toasts;
 
 namespace GhostInTheShell.App;
 
@@ -30,8 +29,6 @@ public partial class App : Application
                 .AddSingleton(_ => CatalogLoader.Load())
                 .AddSingleton<IVmProvider, PodmanProvider>(sp => new PodmanProvider(sp.GetRequiredService<Catalog>()))
                 .AddSingleton<SettingsService>()
-                .AddSingleton<ISukiDialogManager, SukiDialogManager>()
-                .AddSingleton<ISukiToastManager, SukiToastManager>()
                 .AddSingleton<DialogService>()
                 .AddSingleton<MainWindowViewModel>()
                 .BuildServiceProvider();
@@ -39,14 +36,36 @@ public partial class App : Application
             var settings = services.GetRequiredService<SettingsService>();
             settings.Load();
             Strings.SetLanguage(settings.Current.Language);
-            SukiTheme.GetInstance().ChangeBaseTheme(settings.Current.DarkTheme ? ThemeVariant.Dark : ThemeVariant.Light);
+            LocalizeRice();
+            Strings.LanguageChanged += (_, _) => LocalizeRice();
+
+            // The title bar's light / dark button is session-only in Rice; keep the choice across restarts.
+            RequestedThemeVariant = settings.Current.DarkTheme ? ThemeVariant.Dark : ThemeVariant.Light;
+            ThemeManager.Instance.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(ThemeManager.IsDark))
+                    settings.Save(settings.Current with { DarkTheme = ThemeManager.Instance.IsDark });
+            };
 
             var mainVm = services.GetRequiredService<MainWindowViewModel>();
-            desktop.MainWindow = new MainWindow { DataContext = mainVm };
+            var mainWindow = new MainWindow { DataContext = mainVm };
+            desktop.MainWindow = mainWindow;
             desktop.ShutdownRequested += (_, _) => _lifetime.Cancel();
             _ = mainVm.InitializeAsync(_lifetime.Token);
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    // The title bar reads these when it is created, so a language change shows there after a restart.
+    private static void LocalizeRice()
+    {
+        RiceStrings.ToggleTheme = Strings.Get("ToggleTheme");
+        RiceStrings.Minimize = Strings.Get("Minimize");
+        RiceStrings.Maximize = Strings.Get("Maximize");
+        RiceStrings.Restore = Strings.Get("Restore");
+        RiceStrings.Close = Strings.Get("Close");
+        RiceStrings.ToastClose = Strings.Get("Close");
+        RiceStrings.InfoBarClose = Strings.Get("Dismiss");
     }
 }
