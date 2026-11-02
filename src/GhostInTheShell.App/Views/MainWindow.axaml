@@ -11,7 +11,7 @@
                    Width="1100" Height="720" MinWidth="640" MinHeight="420">
 
     <sukiUi:SukiWindow.LogoContent>
-        <Image Source="{StaticResource AppLogo}" Width="20" Height="20" />
+        <Image Source="avares://GhostInTheShell/Assets/ghostintheshell.png" Width="20" Height="20" />
     </sukiUi:SukiWindow.LogoContent>
 
     <sukiUi:SukiWindow.RightWindowTitleBarControls>

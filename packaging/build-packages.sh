@@ -64,7 +64,7 @@ dotnet publish "$ROOT/src/GhostInTheShell.App/GhostInTheShell.App.csproj" \
 find "$STAGE/app" -name '*.pdb' -delete
 # Menu entry pointing at the installed launcher, and the icon (copied so the chmod below covers it).
 sed "s|@BIN@|/usr/bin/ghostintheshell|" "$ROOT/packaging/ghostintheshell.desktop" > "$STAGE/ghostintheshell.desktop"
-cp "$ROOT/packaging/ghostintheshell.svg" "$STAGE/ghostintheshell.svg"
+cp "$ROOT/packaging/ghostintheshell.png" "$STAGE/ghostintheshell.png"
 # A umask of 002 would otherwise ship group-writable files, and some NuGet files come as rwxr--r--.
 chmod -R u+rwX,go+rX,go-w "$STAGE"
 

@@ -9,26 +9,6 @@
         <local:ViewLocator />
     </Application.DataTemplates>
 
-    <Application.Resources>
-        <!-- Vector copy of packaging/ghostintheshell.svg -->
-        <DrawingImage x:Key="AppLogo">
-            <DrawingGroup>
-                <GeometryDrawing Brush="#1e2433" Geometry="M56 16h144a40 40 0 0 1 40 40v144a40 40 0 0 1 -40 40h-144a40 40 0 0 1 -40 -40v-144a40 40 0 0 1 40 -40z" />
-                <GeometryDrawing Brush="#e8ecf4" Geometry="M128 52c-38 0-66 30-66 68v84l16-14 16 14 17-14 17 14 17-14 17 14 16-14 16 14v-84c0-38-28-68-66-68z" />
-                <GeometryDrawing Geometry="M96 116l20 16-20 16">
-                    <GeometryDrawing.Pen>
-                        <Pen Brush="#1e2433" Thickness="10" LineCap="Round" LineJoin="Round" />
-                    </GeometryDrawing.Pen>
-                </GeometryDrawing>
-                <GeometryDrawing Geometry="M128 152h32">
-                    <GeometryDrawing.Pen>
-                        <Pen Brush="#1e2433" Thickness="10" LineCap="Round" />
-                    </GeometryDrawing.Pen>
-                </GeometryDrawing>
-            </DrawingGroup>
-        </DrawingImage>
-    </Application.Resources>
-
     <Application.Styles>
         <FluentTheme />
         <sukiUi:SukiTheme ThemeColor="Blue" />
