@@ -30,8 +30,8 @@ contents:
   # Menu entry + icon.
   - src: artifacts/stage/ghostintheshell.desktop
     dst: /usr/share/applications/ghostintheshell.desktop
-  - src: artifacts/stage/ghostintheshell.svg
-    dst: /usr/share/icons/hicolor/scalable/apps/ghostintheshell.svg
+  - src: artifacts/stage/ghostintheshell.png
+    dst: /usr/share/icons/hicolor/512x512/apps/ghostintheshell.png
   # ── licence: Debian policy location vs. RPM %license ──
   - src: LICENSE
     dst: /usr/share/doc/ghostintheshell/copyright
