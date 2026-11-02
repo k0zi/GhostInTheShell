@@ -21,6 +21,7 @@ internal static class Program
                 {
                     AppId = "ghostintheshell",
                     Name = "Ghost in the Shell",
+                    Author = "David Kozma",
                     IconUri = "avares://GhostInTheShell/Assets/ghostintheshell.png",
                 };
                 o.DefaultThemeId = BuiltInThemes.Fedora.Id;

@@ -106,4 +106,8 @@ The machine and all data in its /home/agent volume will be lost permanently.</va
   <data name="HostFolderInvalid" xml:space="preserve"><value>The host folder must be an absolute path and cannot contain a colon (:).</value></data>
   <data name="HostFolderMissingFormat" xml:space="preserve"><value>The host folder does not exist: {0}</value></data>
   <data name="LogSharingHostFolderFormat" xml:space="preserve"><value>» Sharing host folder {0} as ~/{1}</value></data>
+  <data name="About" xml:space="preserve"><value>About</value></data>
+  <data name="Author" xml:space="preserve"><value>Author</value></data>
+  <data name="Version" xml:space="preserve"><value>Version</value></data>
+  <data name="Ok" xml:space="preserve"><value>OK</value></data>
 </root>

@@ -65,6 +65,10 @@ public partial class App : Application
         RiceStrings.Maximize = Strings.Get("Maximize");
         RiceStrings.Restore = Strings.Get("Restore");
         RiceStrings.Close = Strings.Get("Close");
+        RiceStrings.About = Strings.Get("About");
+        RiceStrings.Author = Strings.Get("Author");
+        RiceStrings.Version = Strings.Get("Version");
+        RiceStrings.Ok = Strings.Get("Ok");
         RiceStrings.ToastClose = Strings.Get("Close");
         RiceStrings.InfoBarClose = Strings.Get("Dismiss");
     }

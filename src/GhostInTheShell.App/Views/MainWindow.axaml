@@ -8,14 +8,13 @@
                  xmlns:l="using:GhostInTheShell.App.Localization"
                  x:Class="GhostInTheShell.App.Views.MainWindow"
                  x:DataType="vm:MainWindowViewModel"
+                 Icon="avares://GhostInTheShell/Assets/ghostintheshell.png"
+                 ShowAboutButton="True"
                  Width="1100" Height="720" MinWidth="640" MinHeight="420">
 
-    <sukiUi:SukiWindow.LogoContent>
-        <Image Source="avares://GhostInTheShell/Assets/ghostintheshell.png" Width="20" Height="20" />
-    </sukiUi:SukiWindow.LogoContent>
-
-    <sukiUi:SukiWindow.RightWindowTitleBarControls>
-        <StackPanel Orientation="Horizontal" Spacing="4">
+    <rice:RiceWindow.TitleBarContent>
+        <!-- Right-aligned, next to the built-in buttons (theme, about, window controls). -->
+        <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Right">
             <TextBlock Text="{Binding BackendText}" VerticalAlignment="Center" Opacity="0.6" FontSize="12" Margin="0 0 8 0" />
             <Button Classes="rice-titlebar" Command="{Binding OpenSettingsCommand}" ToolTip.Tip="{l:Tr Settings}">
                 <mi:MaterialIcon Kind="Cog" />
