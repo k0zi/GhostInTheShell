@@ -202,3 +202,7 @@ All backend calls go through `IVmProvider`, so you can add another backend (QEMU
 - A shared folder is fully writable from the sandbox, and so by any agent running there. Share a project folder, not your whole home.
 - The login user has sudo **inside** the container: with its password if you set one, otherwise without a password.
 - Agent install scripts are downloaded from their vendors and run at build time. Review `catalog.json` if that matters to you.
+
+## License
+
+Ghost in the Shell is licensed under the [MIT license](LICENSE). The packages also redistribute third-party components (the .NET runtime, Avalonia, SkiaSharp/HarfBuzz, the Inter font, Material Design Icons, KD.Avalonia.Rice and its theme palettes, …) under their own licenses; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and the `licenses/` directory. The packages install these to `/usr/share/doc/ghostintheshell/` (deb) and `/usr/share/licenses/ghostintheshell/` (rpm).

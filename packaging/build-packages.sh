@@ -65,6 +65,9 @@ find "$STAGE/app" -name '*.pdb' -delete
 # Menu entry pointing at the installed launcher, and the icon (copied so the chmod below covers it).
 sed "s|@BIN@|/usr/bin/ghostintheshell|" "$ROOT/packaging/ghostintheshell.desktop" > "$STAGE/ghostintheshell.desktop"
 cp "$ROOT/packaging/ghostintheshell.png" "$STAGE/ghostintheshell.png"
+# Third-party notices and license texts (staged so the chmod below normalises their permissions).
+cp "$ROOT/THIRD_PARTY_NOTICES.md" "$STAGE/"
+cp -r "$ROOT/licenses" "$STAGE/licenses"
 # A umask of 002 would otherwise ship group-writable files, and some NuGet files come as rwxr--r--.
 chmod -R u+rwX,go+rX,go-w "$STAGE"
 

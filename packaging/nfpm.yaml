@@ -40,6 +40,22 @@ contents:
     dst: /usr/share/licenses/ghostintheshell/LICENSE
     packager: rpm
     type: license
+  # Third-party notices and license texts for the redistributed components (see THIRD_PARTY_NOTICES.md).
+  - src: artifacts/stage/THIRD_PARTY_NOTICES.md
+    dst: /usr/share/doc/ghostintheshell/THIRD_PARTY_NOTICES.md
+    packager: deb
+  - src: artifacts/stage/licenses
+    dst: /usr/share/doc/ghostintheshell/licenses
+    type: tree
+    packager: deb
+  - src: artifacts/stage/THIRD_PARTY_NOTICES.md
+    dst: /usr/share/licenses/ghostintheshell/THIRD_PARTY_NOTICES.md
+    packager: rpm
+    type: license
+  - src: artifacts/stage/licenses
+    dst: /usr/share/licenses/ghostintheshell/licenses
+    type: tree
+    packager: rpm
 
 # Self-contained .NET build: only native libraries of the base system are needed.
 # Hard: .NET runtime (C++ runtime, zlib, ICU) and Avalonia's X11 backend + Skia (fontconfig).
