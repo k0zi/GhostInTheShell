@@ -115,6 +115,14 @@ The script downloads [nfpm](https://nfpm.goreleaser.com) into `artifacts/tools/`
 
 **Versions** are `<year>.<month>.<patch>`, e.g. `26.10.3`, from [Nerdbank.GitVersioning](https://github.com/dotnet/Nerdbank.GitVersioning): `version.json` holds the year and month, and the patch is the number of commits since that line last changed. When a new month starts, `build-packages.sh` updates `version.json` to it (commit that change, `--no-bump` skips it). Builds from a branch other than `main` or a `v*` tag get a `~g<commit>` suffix, which sorts before the release of the same version. `dotnet tool restore && dotnet nbgv get-version` shows the current version.
 
+**Releases.** The [Build and publish](.github/workflows/build_n_publish.yml) workflow builds, tests and uploads the `.deb` and `.rpm` as a workflow artifact on every push to `main` and every pull request. CI never bumps `version.json`; it only warns when the month is outdated, so commit the bump from a local build. A GitHub release `v<version>` with both packages attached is created by any of:
+
+- **Tag push**: `dotnet nbgv tag` (tags HEAD as `v<its version>`), then `git push origin v<version>`.
+- **github.com**: *Releases → Draft a new release* with a new tag `v<version>` on `main`. The workflow then only attaches the packages to that release.
+- **Manual run**: *Actions → Build and publish → Run workflow* with `publish` ticked. It tags the built commit `v<version>` and creates the release.
+
+Always take the version from `dotnet nbgv get-version` for the commit you release, never pick a number by hand: the tag has to match the version the build computes.
+
 The first machine for a given distro and agent combination takes a few minutes to build. Later machines with the same selection reuse the cached image and start in seconds.
 
 ## How it works
