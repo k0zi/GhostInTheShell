@@ -33,10 +33,10 @@ contents:
   - src: artifacts/stage/ghostintheshell.png
     dst: /usr/share/icons/hicolor/512x512/apps/ghostintheshell.png
   # ── licence: Debian policy location vs. RPM %license ──
-  - src: LICENSE
+  - src: artifacts/stage/LICENSE
     dst: /usr/share/doc/ghostintheshell/copyright
     packager: deb
-  - src: LICENSE
+  - src: artifacts/stage/LICENSE
     dst: /usr/share/licenses/ghostintheshell/LICENSE
     packager: rpm
     type: license
@@ -58,7 +58,8 @@ contents:
     packager: rpm
 
 # Self-contained .NET build: only native libraries of the base system are needed.
-# Hard: .NET runtime (C++ runtime, zlib, ICU) and Avalonia's X11 backend + Skia (fontconfig).
+# Hard: .NET runtime (C++ runtime, zlib, ICU), OpenSSL (loaded by .NET for SHA-256, used to tag the machine
+# images) and Avalonia's X11 backend + Skia (fontconfig).
 # Recommended: GPU rendering, GTK (native file dialogs) and Podman, which runs the machines; it is only
 # a recommendation so a Podman from another source still works (apt, dnf and zypper install it by default).
 overrides:
@@ -69,6 +70,7 @@ overrides:
       - libstdc++6
       - zlib1g
       - libicu80 | libicu79 | libicu78 | libicu77 | libicu76 | libicu75 | libicu74 | libicu73 | libicu72 | libicu71 | libicu70 | libicu67
+      - libssl3t64 | libssl3 | libssl1.1
       - libx11-6
       - libice6
       - libsm6
@@ -90,6 +92,7 @@ overrides:
       - libstdc++.so.6()(64bit)
       - libz.so.1()(64bit)
       - (libicuuc.so.80()(64bit) or libicuuc.so.79()(64bit) or libicuuc.so.78()(64bit) or libicuuc.so.77()(64bit) or libicuuc.so.76()(64bit) or libicuuc.so.75()(64bit) or libicuuc.so.74()(64bit) or libicuuc.so.73()(64bit) or libicuuc.so.72()(64bit) or libicuuc.so.71()(64bit) or libicuuc.so.70()(64bit) or libicuuc.so.69()(64bit) or libicuuc.so.67()(64bit) or libicuuc.so.65()(64bit))
+      - (libssl.so.3()(64bit) or libssl.so.1.1()(64bit))
       - libX11.so.6()(64bit)
       - libICE.so.6()(64bit)
       - libSM.so.6()(64bit)

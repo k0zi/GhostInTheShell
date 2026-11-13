@@ -12,8 +12,8 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OUT="$ROOT/artifacts/packages"
 STAGE="$ROOT/artifacts/stage"
 TOOLS="$ROOT/artifacts/tools"
-NFPM_VERSION=2.47.0
-NFPM_SHA256=0660ca602b2d2d2ae4781a06c692b3eeb9d437ffea05b831d76e41f4a3188783
+NFPM_VERSION=2.49.0
+NFPM_SHA256=2afaa5ffb5e3493402e31e7c67a5a1fb42133e3f66fc315ca0051934125561c7
 
 bump=true
 tests=true
@@ -65,8 +65,8 @@ find "$STAGE/app" -name '*.pdb' -delete
 # Menu entry pointing at the installed launcher, and the icon (copied so the chmod below covers it).
 sed "s|@BIN@|/usr/bin/ghostintheshell|" "$ROOT/packaging/ghostintheshell.desktop" > "$STAGE/ghostintheshell.desktop"
 cp "$ROOT/packaging/ghostintheshell.png" "$STAGE/ghostintheshell.png"
-# Third-party notices and license texts (staged so the chmod below normalises their permissions).
-cp "$ROOT/THIRD_PARTY_NOTICES.md" "$STAGE/"
+# Own license, third-party notices and license texts (staged so the chmod below normalises their permissions).
+cp "$ROOT/LICENSE" "$ROOT/THIRD_PARTY_NOTICES.md" "$STAGE/"
 cp -r "$ROOT/licenses" "$STAGE/licenses"
 # A umask of 002 would otherwise ship group-writable files, and some NuGet files come as rwxr--r--.
 chmod -R u+rwX,go+rX,go-w "$STAGE"
