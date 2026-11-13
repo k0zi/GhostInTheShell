@@ -3,11 +3,6 @@ using System.Resources;
 
 namespace GhostInTheShell.Core.Localization;
 
-public sealed record LanguageOption(string Code, string DisplayName)
-{
-    public override string ToString() => DisplayName;
-}
-
 /// <summary>
 /// User-facing text. English is the neutral resource; other languages are satellite resx files.
 /// The language is held here rather than in the thread culture so async continuations cannot drift.
