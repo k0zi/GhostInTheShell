@@ -7,9 +7,11 @@ using GhostInTheShell.App.ViewModels;
 using GhostInTheShell.App.Views;
 using GhostInTheShell.Core;
 using GhostInTheShell.Core.Catalog;
+using GhostInTheShell.Core.Components;
 using GhostInTheShell.Core.Localization;
 using GhostInTheShell.Podman;
 using KD.Avalonia.Rice;
+using KD.Avalonia.Rice.Notifications;
 using KD.Avalonia.Rice.Theming;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -27,7 +29,9 @@ public partial class App : Application
         {
             var services = new ServiceCollection()
                 .AddSingleton(_ => CatalogLoader.Load())
-                .AddSingleton<IVmProvider, PodmanProvider>(sp => new PodmanProvider(sp.GetRequiredService<Catalog>()))
+                .AddSingleton(sp => ComponentRegistry.Load(sp.GetRequiredService<Catalog>()))
+                .AddSingleton<IVmProvider, PodmanProvider>(sp =>
+                    new PodmanProvider(sp.GetRequiredService<Catalog>(), sp.GetRequiredService<ComponentRegistry>()))
                 .AddSingleton<SettingsService>()
                 .AddSingleton<DialogService>()
                 .AddSingleton<MainWindowViewModel>()
@@ -52,9 +56,18 @@ public partial class App : Application
             desktop.MainWindow = mainWindow;
             desktop.ShutdownRequested += (_, _) => _lifetime.Cancel();
             _ = mainVm.InitializeAsync(_lifetime.Token);
+            // Toasts need a window to show in.
+            mainWindow.Opened += (_, _) => ReportComponentErrors(services.GetRequiredService<ComponentRegistry>());
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    /// <summary>A broken plugin or JSON component is skipped; say which, so its author knows.</summary>
+    private static void ReportComponentErrors(ComponentRegistry components)
+    {
+        foreach (var error in components.Errors)
+            RiceToast.ShowError(error.Message, Strings.Format("ComponentLoadFailedFormat", Path.GetFileName(error.Path)));
     }
 
     // The title bar reads these when it is created, so a language change shows there after a restart.

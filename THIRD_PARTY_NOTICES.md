@@ -9,7 +9,7 @@ components listed below. These components keep their own licenses, and the full 
 
 | Component | Source | License / local copy |
 | --- | --- | --- |
-| .NET runtime 10.0.15 (self-contained runtime pack) and Microsoft.Extensions.DependencyInjection(.Abstractions) 10.0.9 | https://github.com/dotnet/runtime | MIT: licenses/dotnet-runtime-MIT.txt; upstream component notices: licenses/dotnet-runtime-THIRD-PARTY-NOTICES.txt |
+| .NET runtime 10.0.15 (self-contained runtime pack) Microsoft.Extensions.DependencyInjection(.Abstractions) 10.0.9 and System.Composition 10.0.9 (MEF, plugin loading) | https://github.com/dotnet/runtime | MIT: licenses/dotnet-runtime-MIT.txt; upstream component notices: licenses/dotnet-runtime-THIRD-PARTY-NOTICES.txt |
 | Avalonia 12.1.3 (Avalonia, Avalonia.Desktop, Avalonia.FreeDesktop, Avalonia.FreeDesktop.AtSpi, Avalonia.HarfBuzz, Avalonia.Native, Avalonia.Remote.Protocol, Avalonia.Skia, Avalonia.Themes.Fluent, Avalonia.Win32, Avalonia.X11, Avalonia.Fonts.Inter) | https://github.com/AvaloniaUI/Avalonia | MIT: licenses/Avalonia-MIT.txt; upstream component notices: licenses/Avalonia-NOTICE.txt |
 | Inter font, bundled in Avalonia.Fonts.Inter 12.1.3 | https://github.com/rsms/inter | OFL-1.1: licenses/Inter-OFL-1.1.txt (applies to the font, separately from Avalonia's MIT wrapper) |
 | SkiaSharp 3.119.4 and HarfBuzzSharp 8.3.1.3, with their Linux native libraries (SkiaSharp, SkiaSharp.NativeAssets.Linux, HarfBuzzSharp, HarfBuzzSharp.NativeAssets.Linux) | https://github.com/mono/SkiaSharp | MIT: licenses/SkiaSharp-MIT.txt; native component notices (Skia, HarfBuzz, libpng, …): licenses/SkiaSharp-THIRD-PARTY-NOTICES.txt |

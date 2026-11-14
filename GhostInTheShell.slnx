@@ -2,7 +2,23 @@
   <Folder Name="/src/">
     <Project Path="src/GhostInTheShell.App/GhostInTheShell.App.csproj" />
     <Project Path="src/GhostInTheShell.Core/GhostInTheShell.Core.csproj" />
+    <Project Path="src/GhostInTheShell.Plugins.Abstractions/GhostInTheShell.Plugins.Abstractions.csproj" />
     <Project Path="src/GhostInTheShell.Podman/GhostInTheShell.Podman.csproj" />
+  </Folder>
+  <Folder Name="/src/Plugins/">
+    <Project Path="src/Plugins/GhostInTheShell.Plugins.ClaudeCode/GhostInTheShell.Plugins.ClaudeCode.csproj" />
+    <Project Path="src/Plugins/GhostInTheShell.Plugins.Codex/GhostInTheShell.Plugins.Codex.csproj" />
+    <Project Path="src/Plugins/GhostInTheShell.Plugins.Cpp/GhostInTheShell.Plugins.Cpp.csproj" />
+    <Project Path="src/Plugins/GhostInTheShell.Plugins.Dotnet/GhostInTheShell.Plugins.Dotnet.csproj" />
+    <Project Path="src/Plugins/GhostInTheShell.Plugins.Hermes/GhostInTheShell.Plugins.Hermes.csproj" />
+    <Project Path="src/Plugins/GhostInTheShell.Plugins.Java/GhostInTheShell.Plugins.Java.csproj" />
+    <Project Path="src/Plugins/GhostInTheShell.Plugins.OpenCode/GhostInTheShell.Plugins.OpenCode.csproj" />
+    <Project Path="src/Plugins/GhostInTheShell.Plugins.Pi/GhostInTheShell.Plugins.Pi.csproj" />
+    <Project Path="src/Plugins/GhostInTheShell.Plugins.Python/GhostInTheShell.Plugins.Python.csproj" />
+    <Project Path="src/Plugins/GhostInTheShell.Plugins.Rust/GhostInTheShell.Plugins.Rust.csproj" />
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/GhostInTheShell.SamplePlugin/GhostInTheShell.SamplePlugin.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/GhostInTheShell.Tests/GhostInTheShell.Tests.csproj" />

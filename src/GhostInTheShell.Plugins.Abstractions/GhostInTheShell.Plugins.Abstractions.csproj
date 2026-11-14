@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>GhostInTheShell.Plugins</RootNamespace>
+    <Description>Contracts for GhostInTheShell component plugins (coding agents and development environments).</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Composition.AttributedModel" Version="10.0.9" />
+  </ItemGroup>
+  <!-- Plugins bind to this assembly version; keep it fixed so the monthly app version does not break them.
+       Bump it only on a breaking change to the contracts. NBGV computes AssemblyVersion in GetBuildVersion, so override it after. -->
+  <Target Name="PinContractAssemblyVersion" AfterTargets="GetBuildVersion">
+    <PropertyGroup>
+      <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    </PropertyGroup>
+  </Target>
+</Project>

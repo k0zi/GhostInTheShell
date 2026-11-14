@@ -51,6 +51,8 @@ Built with [Avalonia 12](https://avaloniaui.net/) and [KD.Avalonia.Rice](https:/
 
 These are optional: pick them per machine in the new machine dialog. An option is greyed out when it has no install command for the chosen distribution.
 
+Agents and development environments are **components**: you can add your own, or patch a bundled one, as a JSON file or as a plugin assembly. See [Components and plugins](#components-and-plugins).
+
 ### Developer tools on every machine
 
 Installed on every machine, whatever you select:
@@ -127,7 +129,7 @@ The first machine for a given distro and agent combination takes a few minutes t
 
 ## How it works
 
-1. **Image**: the chosen distro, development environments, agents and login user become a Containerfile (`ContainerfileBuilder`). Each development environment and agent gets its own layer, and the user is created after the shared root layers, so machines with different users still share the build cache. The image is tagged by the Containerfile's content hash (`localhost/gits/<os>:<hash>`), so the same selection reuses the image, and any catalog change triggers a rebuild.
+1. **Image**: the chosen distro, development environments, agents and login user become a Containerfile (`ContainerfileBuilder`). Each development environment and agent gets its own layer, and the user is created after the shared root layers, so machines with different users still share the build cache. The image is tagged by the Containerfile's content hash (`localhost/gits/<os>:<hash>`), so the same selection reuses the image, and any catalog or component change triggers a rebuild.
 2. **Machine**: a container named `gits-<name>` with `--cpus`, `--memory`, `--init`, and a named volume `gits-<name>-home` mounted at `/home/<user>`. Podman copies the image's home directory into the empty volume, so installed agents and your files survive stop, start and image updates.
 3. **State**: there is no database. Each machine's settings (but never its passwords) are stored as `gits.*` labels on its container, and the app reads them back with `podman ps`.
 4. **Terminal**: `podman exec -it -u <user> -w /home/<user> gits-<name> bash -l`, placed into a terminal command template.
@@ -143,7 +145,9 @@ Files live in `~/.config/ghostintheshell/`:
 | File | Purpose |
 |---|---|
 | `settings.json` | terminal command template, language and theme (editable from **Settings** in the app) |
-| `catalog.json` | *optional*: replaces the built-in catalog of distributions, development environments and agents |
+| `catalog.json` | *optional*: replaces the built-in catalog of distributions and common setup steps |
+| `components/*.json` | *optional*: extra or patched agents and development environments |
+| `plugins/<Name>/<Name>.dll` | *optional*: component plugin assemblies (system-wide ones go to `/usr/lib/ghostintheshell/plugins/`) |
 
 ### Terminal template
 
@@ -159,33 +163,42 @@ On first run the app picks the first terminal it finds on your `PATH`.
 
 ### Custom catalog
 
-Install scripts change. To fix or extend them without rebuilding the app, copy [`src/GhostInTheShell.Core/catalog.json`](src/GhostInTheShell.Core/catalog.json) to `~/.config/ghostintheshell/catalog.json` and edit it:
+Install scripts change. To fix or extend the distributions without rebuilding the app, copy [`src/GhostInTheShell.Core/catalog.json`](src/GhostInTheShell.Core/catalog.json) to `~/.config/ghostintheshell/catalog.json` and edit it:
 
 ```jsonc
 {
   "operatingSystems": [
     { "id": "debian-13", "displayName": "Debian 13", "image": "docker.io/library/debian:13",
-      "family": "debian",                  // picks each toolchain's install command
+      "family": "debian",                  // picks each component's install command
       "setup": "apt-get update && apt-get install -y curl git sudo ..." }
   ],
   "commonSetup": [ "..." ],               // root commands run on every distro (Node.js, Oh My Posh)
   "userSetup": [ "..." ],                 // commands run as the machine user on every distro (shell prompt)
-  "toolchains": [
-    { "id": "go", "displayName": "Go", "description": "...",
-      "root": { "debian": "apt-get update && apt-get install -y golang",   // per family, as root
-                "*": "..." },                                               // fallback for any family
-      "user": "...",                                                        // optional, as the agent user
-      "check": "go version" }
-  ],
-  "agents": [
-    { "id": "myagent", "displayName": "My Agent", "description": "...",
-      "root": { "fedora": "dnf install -y libatomic" },                  // optional: root prerequisites, only when selected
-      "install": "curl -fsSL https://example.com/install.sh | bash",   // runs as the agent user
-      "check": "myagent --version" }                                    // fails the build if the install broke
-  ],
-  "userPath": [ "~/.local/bin" ]            // ~ is the machine user's home
+  "userPath": [ "~/.local/bin" ]            // on every machine's PATH; ~ is the machine user's home
 }
 ```
+
+Older catalogs that still define `agents` and `toolchains` inline keep working: those entries are loaded as JSON components.
+
+### Components and plugins
+
+Each agent and development environment implements `IContainerComponent` from `GhostInTheShell.Plugins.Abstractions`, and each one is its own plugin assembly: the app has no components compiled in. The bundled ones live in [`src/Plugins`](src/Plugins), one project per component, and ship in the `plugins/` folder next to the executable (`/usr/lib/ghostintheshell/plugins/` when installed as a package). The app loads components in this order, and a later component with the same `id` replaces an earlier one:
+
+1. plugin assemblies (System.Composition / MEF): the bundled ones, then `/usr/lib/ghostintheshell/plugins/`, then `~/.config/ghostintheshell/plugins/`;
+2. JSON components from `~/.config/ghostintheshell/components/*.json`.
+
+The quickest way to add a component is a JSON file, no compiling needed:
+
+```jsonc
+// ~/.config/ghostintheshell/components/myagent.json
+{ "id": "myagent", "kind": "agent", "displayName": "My Agent", "description": "...",
+  "root": { "fedora": "dnf install -y libatomic" },          // optional: root commands per distro family ("*" = any)
+  "user": "curl -fsSL https://example.com/install.sh | bash", // runs as the machine user
+  "check": "myagent --version",                              // fails the build if the install broke
+  "userPath": [ "~/.myagent/bin" ] }                         // added to PATH when selected
+```
+
+For anything that needs code, or to ship components separately from the app, write a plugin. [`docs/plugins.md`](docs/plugins.md) explains how, and [`samples/GhostInTheShell.SamplePlugin`](samples/GhostInTheShell.SamplePlugin) is a working example. A plugin or JSON file that fails to load is skipped and reported in a notification.
 
 ### Translations
 
@@ -195,9 +208,13 @@ UI text lives in [`src/GhostInTheShell.Core/Localization`](src/GhostInTheShell.C
 
 ```
 src/
-  GhostInTheShell.Core/     models, IVmProvider, catalog, Containerfile generation (no UI)
+  GhostInTheShell.Plugins.Abstractions/  plugin contracts (IContainerComponent, ContainerComponentBase)
+  GhostInTheShell.Core/     models, IVmProvider, catalog, plugin loading, Containerfile generation (no UI)
+  Plugins/                  one plugin project per bundled agent and development environment
   GhostInTheShell.Podman/   PodmanProvider — drives the podman CLI
   GhostInTheShell.App/      Avalonia + KD.Avalonia.Rice desktop app (MVVM, CommunityToolkit.Mvvm)
+samples/
+  GhostInTheShell.SamplePlugin/  example plugin (Go toolchain)
 tests/
   GhostInTheShell.Tests/    xUnit tests
 ```
@@ -209,7 +226,7 @@ All backend calls go through `IVmProvider`, so you can add another backend (QEMU
 - The machines are **containers, not VMs**: they share the host kernel. Rootless Podman keeps them isolated from your user account, but they don't give you the isolation of a hypervisor.
 - A shared folder is fully writable from the sandbox, and so by any agent running there. Share a project folder, not your whole home.
 - The login user has sudo **inside** the container: with its password if you set one, otherwise without a password.
-- Agent install scripts are downloaded from their vendors and run at build time. Review `catalog.json` if that matters to you.
+- Agent install scripts are downloaded from their vendors and run at build time. Review the bundled plugins (and any plugin or JSON component you install) if that matters to you. A plugin assembly runs inside the app with your user's rights, so install plugins only from sources you trust.
 
 ## License
 

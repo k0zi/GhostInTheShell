@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using GhostInTheShell.Core.Catalog;
+using GhostInTheShell.Core.Components;
 using GhostInTheShell.Core.Localization;
 using GhostInTheShell.Core.Models;
 
@@ -10,17 +11,19 @@ public sealed partial class MachineViewModel : ViewModelBase
 {
     private const int MaxLogLines = 400;
     private readonly Catalog _catalog;
+    private readonly ComponentRegistry _components;
     private readonly List<string> _logLines = [];
 
-    public MachineViewModel(VmInfo info, Catalog catalog)
+    public MachineViewModel(VmInfo info, Catalog catalog, ComponentRegistry components)
     {
         _catalog = catalog;
+        _components = components;
         _info = info;
     }
 
     /// <summary>Placeholder shown while <see cref="Core.IVmProvider.CreateAsync"/> runs.</summary>
-    public static MachineViewModel Pending(VmSpec spec, Catalog catalog, CancellationTokenSource cts) =>
-        new(new VmInfo("", VmState.Creating, spec, DateTimeOffset.Now), catalog) { CreationCts = cts };
+    public static MachineViewModel Pending(VmSpec spec, Catalog catalog, ComponentRegistry components, CancellationTokenSource cts) =>
+        new(new VmInfo("", VmState.Creating, spec, DateTimeOffset.Now), catalog, components) { CreationCts = cts };
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(Id), nameof(Name), nameof(State), nameof(OsName), nameof(AgentNames), nameof(HasAgents),
@@ -53,7 +56,7 @@ public sealed partial class MachineViewModel : ViewModelBase
     public string OsName => _catalog.OperatingSystems.FirstOrDefault(o => o.Id == Info.Spec.OsId)?.DisplayName ?? Info.Spec.OsId;
 
     public IReadOnlyList<string> AgentNames =>
-        Info.Spec.AgentIds.Select(id => _catalog.Agents.FirstOrDefault(a => a.Id == id)?.DisplayName ?? id).ToList();
+        Info.Spec.AgentIds.Select(DisplayNameOf).ToList();
 
     public string UserName => Info.Spec.UserName;
 
@@ -62,9 +65,12 @@ public sealed partial class MachineViewModel : ViewModelBase
     public bool HasAgents => Info.Spec.AgentIds.Count > 0;
 
     public IReadOnlyList<string> ToolchainNames =>
-        Info.Spec.ToolchainIds.Select(id => _catalog.Toolchains.FirstOrDefault(t => t.Id == id)?.DisplayName ?? id).ToList();
+        Info.Spec.ToolchainIds.Select(DisplayNameOf).ToList();
 
     public bool HasToolchains => Info.Spec.ToolchainIds.Count > 0;
+
+    // A machine may name a component whose plugin has since been removed.
+    private string DisplayNameOf(string id) => _components.Find(id)?.DisplayName ?? id;
 
     public string ResourcesText =>
         Strings.Format("ResourcesFormat", Info.Spec.Cpus, Info.Spec.MemoryMb / 1024.0, Info.Spec.DiskGb);

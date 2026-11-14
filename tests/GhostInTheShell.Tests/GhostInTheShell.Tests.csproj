@@ -16,4 +16,24 @@
     <ProjectReference Include="..\..\src\GhostInTheShell.Podman\GhostInTheShell.Podman.csproj" />
     <ProjectReference Include="..\..\src\GhostInTheShell.App\GhostInTheShell.App.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- Built, not referenced: the plugin tests load it the way the app does, from a plugins folder. -->
+    <ProjectReference Include="..\..\samples\GhostInTheShell.SamplePlugin\GhostInTheShell.SamplePlugin.csproj"
+                      ReferenceOutputAssembly="false" Private="false" />
+  </ItemGroup>
+  <!-- The bundled plugins land in plugins/, as next to the app. -->
+  <Import Project="..\..\src\Plugins\BundledPlugins.targets" />
+  <Target Name="CopySamplePlugin" AfterTargets="Build">
+    <MSBuild Projects="..\..\samples\GhostInTheShell.SamplePlugin\GhostInTheShell.SamplePlugin.csproj"
+             Targets="GetTargetPath" Properties="Configuration=$(Configuration)">
+      <Output TaskParameter="TargetOutputs" ItemName="SamplePluginAssembly" />
+    </MSBuild>
+    <PropertyGroup>
+      <SamplePluginDir>@(SamplePluginAssembly->'%(RootDir)%(Directory)')</SamplePluginDir>
+    </PropertyGroup>
+    <ItemGroup>
+      <SamplePluginFiles Include="$(SamplePluginDir)*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(SamplePluginFiles)" DestinationFolder="$(OutDir)sample-plugins/GhostInTheShell.SamplePlugin" SkipUnchangedFiles="true" />
+  </Target>
 </Project>

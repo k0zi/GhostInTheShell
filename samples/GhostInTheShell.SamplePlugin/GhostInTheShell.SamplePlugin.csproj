@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- An example component plugin. Build it and copy the output folder to
+       ~/.config/ghostintheshell/plugins/GhostInTheShell.SamplePlugin/ (see docs/plugins.md). -->
+  <PropertyGroup>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- The app supplies the contracts at run time; a private copy would be a different, incompatible type. -->
+    <ProjectReference Include="..\..\src\GhostInTheShell.Plugins.Abstractions\GhostInTheShell.Plugins.Abstractions.csproj">
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

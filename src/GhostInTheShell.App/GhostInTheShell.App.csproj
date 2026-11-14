@@ -24,4 +24,6 @@
         <ProjectReference Include="..\GhostInTheShell.Core\GhostInTheShell.Core.csproj" />
         <ProjectReference Include="..\GhostInTheShell.Podman\GhostInTheShell.Podman.csproj" />
     </ItemGroup>
+    <!-- Every agent and development environment is a plugin; ship them in plugins/ next to the app. -->
+    <Import Project="..\Plugins\BundledPlugins.targets" />
 </Project>

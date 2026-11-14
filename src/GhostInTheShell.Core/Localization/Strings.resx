@@ -57,6 +57,7 @@ The machine and all data in its /home/agent volume will be lost permanently.</va
   <data name="CodingAgents" xml:space="preserve"><value>Coding agents</value></data>
   <data name="DevEnvironments" xml:space="preserve"><value>Development environments</value></data>
   <data name="NotAvailableOnOs" xml:space="preserve"><value>Not available on this distribution</value></data>
+  <data name="ComponentLoadFailedFormat" xml:space="preserve"><value>Could not load {0}</value></data>
   <data name="NameExistsFormat" xml:space="preserve"><value>A machine named “{0}” already exists.</value></data>
   <data name="Language" xml:space="preserve"><value>Language</value></data>
   <data name="Theme" xml:space="preserve"><value>Theme</value></data>

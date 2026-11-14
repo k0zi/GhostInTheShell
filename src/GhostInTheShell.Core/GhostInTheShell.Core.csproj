@@ -6,6 +6,12 @@
     <EmbeddedResource Include="catalog.json" LogicalName="GhostInTheShell.Core.catalog.json" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="System.Composition" Version="10.0.9" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\GhostInTheShell.Plugins.Abstractions\GhostInTheShell.Plugins.Abstractions.csproj" />
+  </ItemGroup>
+  <ItemGroup>
     <InternalsVisibleTo Include="GhostInTheShell.Tests" />
   </ItemGroup>
 </Project>

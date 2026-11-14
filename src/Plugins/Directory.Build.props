@@ -1,0 +1,15 @@
+<Project>
+  <!-- Every bundled component plugin: one component per assembly, loaded by the app from <app>/plugins/<Name>/. -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+  <PropertyGroup>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- The app supplies the contracts at run time; a private copy would be a different, incompatible type. -->
+    <ProjectReference Include="$(MSBuildThisFileDirectory)../GhostInTheShell.Plugins.Abstractions/GhostInTheShell.Plugins.Abstractions.csproj">
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </ProjectReference>
+  </ItemGroup>
+</Project>

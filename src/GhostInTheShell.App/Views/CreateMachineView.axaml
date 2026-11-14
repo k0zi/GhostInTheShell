@@ -64,14 +64,14 @@
                         <TextBlock Text="{l:Tr CodingAgents}" FontWeight="SemiBold" />
                         <ItemsControl ItemsSource="{Binding Agents}">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="vm:AgentOption">
+                                <DataTemplate x:DataType="vm:ComponentOption">
                                     <CheckBox IsChecked="{Binding IsSelected}" IsEnabled="{Binding IsSupported}" Margin="0 2"
                                               ToolTip.Tip="{l:Tr NotAvailableOnOs}"
                                               ToolTip.ServiceEnabled="{Binding !IsSupported}"
                                               ToolTip.ShowOnDisabled="True">
                                         <StackPanel>
-                                            <TextBlock Text="{Binding Definition.DisplayName}" />
-                                            <TextBlock Text="{Binding Definition.Description}" Opacity="0.55" FontSize="12" TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding Component.DisplayName}" />
+                                            <TextBlock Text="{Binding Component.Description}" Opacity="0.55" FontSize="12" TextWrapping="Wrap" />
                                         </StackPanel>
                                     </CheckBox>
                                 </DataTemplate>
@@ -83,14 +83,14 @@
                         <TextBlock Text="{l:Tr DevEnvironments}" FontWeight="SemiBold" />
                         <ItemsControl ItemsSource="{Binding Toolchains}">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate x:DataType="vm:ToolchainOption">
+                                <DataTemplate x:DataType="vm:ComponentOption">
                                     <CheckBox IsChecked="{Binding IsSelected}" IsEnabled="{Binding IsSupported}" Margin="0 2"
                                               ToolTip.Tip="{l:Tr NotAvailableOnOs}"
                                               ToolTip.ServiceEnabled="{Binding !IsSupported}"
                                               ToolTip.ShowOnDisabled="True">
                                         <StackPanel>
-                                            <TextBlock Text="{Binding Definition.DisplayName}" />
-                                            <TextBlock Text="{Binding Definition.Description}" Opacity="0.55" FontSize="12" TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding Component.DisplayName}" />
+                                            <TextBlock Text="{Binding Component.Description}" Opacity="0.55" FontSize="12" TextWrapping="Wrap" />
                                         </StackPanel>
                                     </CheckBox>
                                 </DataTemplate>

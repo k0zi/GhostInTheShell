@@ -1,11 +1,12 @@
 using System.Security.Cryptography;
 using System.Text;
-using GhostInTheShell.Core.Catalog;
+using GhostInTheShell.Core.Components;
+using GhostInTheShell.Plugins;
 
 namespace GhostInTheShell.Core.Provisioning;
 
 /// <summary>
-/// Turns an OS + toolchain + agent selection into a Containerfile. Each toolchain and agent gets its
+/// Turns an OS + component selection into a Containerfile. Each component gets its
 /// own layer so that machines sharing a prefix of the selection reuse the build cache.
 /// </summary>
 public static class ContainerfileBuilder
@@ -15,22 +16,23 @@ public static class ContainerfileBuilder
 
     public static string HomeDirectory(string userName) => $"/home/{userName}";
 
+    /// <param name="components">Where the selected ids are looked up.</param>
     /// <param name="userName">The login user; must already be valid (<see cref="Models.VmSpec.IsValidUserName"/>).</param>
-    public static string Build(Catalog.Catalog catalog, string osId, IEnumerable<string> agentIds,
+    public static string Build(Catalog.Catalog catalog, ComponentRegistry components, string osId, IEnumerable<string> agentIds,
         IEnumerable<string>? toolchainIds = null, string userName = Models.VmSpec.DefaultUserName)
     {
         if (!Models.VmSpec.IsValidUserName(userName))
             throw new ArgumentException($"Invalid user name: {userName}", nameof(userName));
         var home = HomeDirectory(userName);
         var os = catalog.GetOs(osId);
-        // Catalog order, not click order, so the same selection always yields the same file (and image tag).
-        var agents = catalog.Agents.Where(a => agentIds.Contains(a.Id)).ToList();
-        var toolchainSet = toolchainIds?.ToHashSet() ?? [];
-        var toolchains = catalog.Toolchains.Where(t => toolchainSet.Contains(t.Id)).ToList();
-        if (toolchains.FirstOrDefault(t => !t.SupportsOs(os)) is { } unsupported)
+        var target = os.ToTarget();
+        var selectedIds = agentIds.Concat(toolchainIds ?? []).ToHashSet(StringComparer.Ordinal);
+        foreach (var id in selectedIds)
+            components.Get(id);
+        // Registry order, not click order, so the same selection always yields the same file (and image tag).
+        var selected = components.All.Where(c => selectedIds.Contains(c.Id)).ToList();
+        if (selected.FirstOrDefault(c => !c.SupportsOs(target)) is { } unsupported)
             throw new NotSupportedException($"{unsupported.DisplayName} has no install command for {os.DisplayName}.");
-        if (agents.FirstOrDefault(a => !a.SupportsOs(os)) is { } unsupportedAgent)
-            throw new NotSupportedException($"{unsupportedAgent.DisplayName} has no prerequisites for {os.DisplayName}.");
 
         var sb = new StringBuilder();
         sb.AppendLine($"FROM {os.Image}");
@@ -40,17 +42,12 @@ public static class ContainerfileBuilder
         foreach (var step in catalog.CommonSetup)
             sb.AppendLine(Run(step));
 
-        foreach (var toolchain in toolchains)
+        foreach (var component in selected)
         {
-            if (toolchain.GetRootCommand(os) is not { } root) continue;
-            sb.AppendLine($"# toolchain: {toolchain.Id}");
-            sb.AppendLine(Run(root));
-        }
-
-        foreach (var agent in agents)
-        {
-            if (agent.GetRootCommand(os) is not { } root) continue;
-            sb.AppendLine($"# agent prerequisites: {agent.Id}");
+            if (component.GetRootCommand(target) is not { } root) continue;
+            sb.AppendLine(component.Kind == ComponentKind.Agent
+                ? $"# agent prerequisites: {component.Id}"
+                : $"# toolchain: {component.Id}");
             sb.AppendLine(Run(root));
         }
 
@@ -63,7 +60,10 @@ public static class ContainerfileBuilder
             $"usermod -s /bin/bash {userName}; " +
             $"else useradd -m -s /bin/bash {userName}; fi"));
 
-        var userPath = catalog.UserPath.Select(p => ExpandHome(p, home)).ToList();
+        var userPath = catalog.UserPath.Concat(selected.SelectMany(c => c.UserPath))
+            .Select(p => ExpandHome(p, home))
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
         sb.AppendLine($"ENV PATH={string.Join(':', userPath.Append("$PATH"))}");
         // Login shells reset PATH from /etc/profile, so persist it for interactive sessions too.
         sb.AppendLine(Run($"echo 'export PATH={string.Join(':', userPath)}:$PATH' > /etc/profile.d/gits-agent-path.sh"));
@@ -72,19 +72,14 @@ public static class ContainerfileBuilder
         sb.AppendLine($"WORKDIR {home}");
         foreach (var step in catalog.UserSetup)
             sb.AppendLine(Run(step));
-        foreach (var toolchain in toolchains)
+        foreach (var component in selected)
         {
-            var command = string.Join(" && ", new[] { toolchain.User, toolchain.Check }.Where(c => c is not null));
+            var command = string.Join(" && ", new[] { component.GetUserCommand(target), component.Check }.Where(c => c is not null));
             if (command.Length == 0) continue;
-            sb.AppendLine($"# toolchain user: {toolchain.Id}");
+            sb.AppendLine(component.Kind == ComponentKind.Agent
+                ? $"# agent: {component.Id}"
+                : $"# toolchain user: {component.Id}");
             sb.AppendLine(Run(command));
-        }
-
-        foreach (var agent in agents)
-        {
-            sb.AppendLine($"# agent: {agent.Id}");
-            var install = agent.Check is null ? agent.Install : $"{agent.Install} && {agent.Check}";
-            sb.AppendLine(Run(install));
         }
 
         sb.AppendLine("CMD [\"sleep\", \"infinity\"]");

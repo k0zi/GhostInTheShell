@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using GhostInTheShell.Core;
+using GhostInTheShell.Core.Components;
 using GhostInTheShell.Core.Localization;
 using GhostInTheShell.Core.Models;
 using GhostInTheShell.Core.Provisioning;
@@ -10,7 +11,7 @@ using GhostInTheShell.Core.Provisioning;
 namespace GhostInTheShell.Podman;
 
 /// <summary>Runs machines as rootless podman containers built from a generated Containerfile.</summary>
-public sealed class PodmanProvider(Core.Catalog.Catalog catalog, PodmanCli? cli = null) : IVmProvider
+public sealed class PodmanProvider(Core.Catalog.Catalog catalog, ComponentRegistry components, PodmanCli? cli = null) : IVmProvider
 {
     private readonly PodmanCli _cli = cli ?? new PodmanCli();
 
@@ -155,7 +156,7 @@ public sealed class PodmanProvider(Core.Catalog.Catalog catalog, PodmanCli? cli 
 
     private async Task<string> BuildImageAsync(VmSpec spec, IProgress<string> log, CancellationToken ct)
     {
-        var containerfile = ContainerfileBuilder.Build(catalog, spec.OsId, spec.AgentIds, spec.ToolchainIds, spec.UserName);
+        var containerfile = ContainerfileBuilder.Build(catalog, components, spec.OsId, spec.AgentIds, spec.ToolchainIds, spec.UserName);
         var tag = ContainerfileBuilder.ImageTag(spec.OsId, containerfile);
 
         if ((await _cli.TryRunAsync(["image", "exists", tag], ct)).ExitCode == 0)

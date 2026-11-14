@@ -2,33 +2,21 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GhostInTheShell.Core.Catalog;
+using GhostInTheShell.Core.Components;
 using GhostInTheShell.Core.Localization;
 using GhostInTheShell.Core.Models;
+using GhostInTheShell.Plugins;
 
 namespace GhostInTheShell.App.ViewModels;
 
-public sealed partial class AgentOption(AgentDefinition definition) : ObservableObject
+/// <summary>One agent or development environment checkbox in the "new machine" form.</summary>
+public sealed partial class ComponentOption(IContainerComponent component) : ObservableObject
 {
-    public AgentDefinition Definition { get; } = definition;
+    public IContainerComponent Component { get; } = component;
 
     [ObservableProperty] private bool _isSelected;
 
-    /// <summary>False when the agent's prerequisites have no install command for the chosen distro.</summary>
-    [ObservableProperty] private bool _isSupported = true;
-
-    partial void OnIsSupportedChanged(bool value)
-    {
-        if (!value) IsSelected = false;
-    }
-}
-
-public sealed partial class ToolchainOption(ToolchainDefinition definition) : ObservableObject
-{
-    public ToolchainDefinition Definition { get; } = definition;
-
-    [ObservableProperty] private bool _isSelected;
-
-    /// <summary>False when the chosen distro has no install command for this toolchain.</summary>
+    /// <summary>False when the component has no install command for the chosen distro.</summary>
     [ObservableProperty] private bool _isSupported = true;
 
     partial void OnIsSupportedChanged(bool value)
@@ -50,13 +38,14 @@ public sealed partial class CreateMachineViewModel : ViewModelBase
     private readonly Action<NewMachineRequest?> _complete;
     private readonly IReadOnlySet<string> _existingNames;
 
-    public CreateMachineViewModel(Catalog catalog, IReadOnlySet<string> existingNames, Action<NewMachineRequest?> complete)
+    public CreateMachineViewModel(Catalog catalog, ComponentRegistry components, IReadOnlySet<string> existingNames,
+        Action<NewMachineRequest?> complete)
     {
         _complete = complete;
         _existingNames = existingNames;
         OperatingSystems = catalog.OperatingSystems;
-        Agents = new(catalog.Agents.Select(a => new AgentOption(a)));
-        Toolchains = new(catalog.Toolchains.Select(t => new ToolchainOption(t)));
+        Agents = new(components.Agents.Select(c => new ComponentOption(c)));
+        Toolchains = new(components.Toolchains.Select(c => new ComponentOption(c)));
         _selectedOs = OperatingSystems.FirstOrDefault();
         UpdateSupport();
         _name = SuggestName(existingNames);
@@ -68,9 +57,9 @@ public sealed partial class CreateMachineViewModel : ViewModelBase
 
     public IReadOnlyList<OsDefinition> OperatingSystems { get; }
 
-    public ObservableCollection<AgentOption> Agents { get; }
+    public ObservableCollection<ComponentOption> Agents { get; }
 
-    public ObservableCollection<ToolchainOption> Toolchains { get; }
+    public ObservableCollection<ComponentOption> Toolchains { get; }
 
     public int MaxCpus { get; }
 
@@ -103,8 +92,8 @@ public sealed partial class CreateMachineViewModel : ViewModelBase
             (int)MemoryGb * 1024,
             (int)DiskGb,
             SelectedOs?.Id ?? "",
-            Agents.Where(a => a.IsSelected).Select(a => a.Definition.Id).ToList(),
-            Toolchains.Where(t => t.IsSelected).Select(t => t.Definition.Id).ToList(),
+            Agents.Where(a => a.IsSelected).Select(a => a.Component.Id).ToList(),
+            Toolchains.Where(t => t.IsSelected).Select(t => t.Component.Id).ToList(),
             UserName.Trim(),
             NormalizeHostFolder(HostFolder));
         var credentials = new VmCredentials(UserPassword, AdminPassword);
@@ -150,10 +139,9 @@ public sealed partial class CreateMachineViewModel : ViewModelBase
 
     private void UpdateSupport()
     {
-        foreach (var option in Agents)
-            option.IsSupported = SelectedOs is not null && option.Definition.SupportsOs(SelectedOs);
-        foreach (var option in Toolchains)
-            option.IsSupported = SelectedOs is not null && option.Definition.SupportsOs(SelectedOs);
+        var target = SelectedOs?.ToTarget();
+        foreach (var option in Agents.Concat(Toolchains))
+            option.IsSupported = target is not null && option.Component.SupportsOs(target);
     }
 
     /// <summary>Empty means no sharing; <c>~</c> is the host user's home, as in a shell.</summary>

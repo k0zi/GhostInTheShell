@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using GhostInTheShell.App.Services;
 using GhostInTheShell.Core;
 using GhostInTheShell.Core.Catalog;
+using GhostInTheShell.Core.Components;
 using GhostInTheShell.Core.Localization;
 using GhostInTheShell.Core.Models;
 using KD.Avalonia.Rice.Notifications;
@@ -18,6 +19,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     private readonly IVmProvider _provider;
     private readonly Catalog _catalog;
+    private readonly ComponentRegistry _components;
     private readonly SettingsService _settings;
     private readonly DialogService _dialogs;
     private readonly DispatcherTimer _refreshDebounce;
@@ -25,10 +27,12 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private DateTimeOffset _lastDiskUsage = DateTimeOffset.MinValue;
     private CancellationToken _appLifetime;
 
-    public MainWindowViewModel(IVmProvider provider, Catalog catalog, SettingsService settings, DialogService dialogs)
+    public MainWindowViewModel(IVmProvider provider, Catalog catalog, ComponentRegistry components, SettingsService settings,
+        DialogService dialogs)
     {
         _provider = provider;
         _catalog = catalog;
+        _components = components;
         _settings = settings;
         _dialogs = dialogs;
 
@@ -150,7 +154,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             var existing = Machines.FirstOrDefault(m => m.Name == info.Name);
             // Keep the last known usage when this refresh did not measure it.
             var merged = hasDiskUsage || existing is null ? info : info with { DiskUsedBytes = existing.Info.DiskUsedBytes };
-            if (existing is null) Insert(new MachineViewModel(merged, _catalog));
+            if (existing is null) Insert(new MachineViewModel(merged, _catalog, _components));
             else if (existing.State != VmState.Creating) existing.Info = merged;
         }
     }
@@ -167,12 +171,12 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     {
         var names = Machines.Select(m => m.Name).ToHashSet();
         var request = await _dialogs.ShowAsync<NewMachineRequest?>(Strings.Get("NewMachine"), null,
-            complete => new CreateMachineViewModel(_catalog, names, complete));
+            complete => new CreateMachineViewModel(_catalog, _components, names, complete));
         if (request is null) return;
         var spec = request.Spec;
 
         var cts = new CancellationTokenSource();
-        var card = MachineViewModel.Pending(spec, _catalog, cts);
+        var card = MachineViewModel.Pending(spec, _catalog, _components, cts);
         card.IsLogVisible = true;
         Insert(card);
         OnPropertyChanged(nameof(IsEmpty));

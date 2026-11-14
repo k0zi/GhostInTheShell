@@ -1,0 +1,39 @@
+<Project>
+  <!--
+    Builds the bundled component plugins and copies each one's output to $(BundledPluginsDir)<Name>/ next to the
+    importing project's output (and publish output), where the app loads them like any other plugin.
+  -->
+  <PropertyGroup>
+    <BundledPluginsDir Condition=" '$(BundledPluginsDir)' == '' ">plugins/</BundledPluginsDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <BundledPlugin Include="$(MSBuildThisFileDirectory)*/*.csproj" />
+    <!-- Built first, never referenced: the app must not see the plugins at compile time. -->
+    <ProjectReference Include="@(BundledPlugin)" ReferenceOutputAssembly="false" Private="false" />
+  </ItemGroup>
+
+  <Target Name="_CollectBundledPluginFiles">
+    <!-- Same properties the ProjectReference build used: the plugins are RID-neutral even when the app is not. -->
+    <MSBuild Projects="@(BundledPlugin)" Targets="GetTargetPath" RemoveProperties="RuntimeIdentifier;SelfContained">
+      <Output TaskParameter="TargetOutputs" ItemName="_BundledPluginAssembly" />
+    </MSBuild>
+    <ItemGroup>
+      <_BundledPluginFile Include="%(_BundledPluginAssembly.RootDir)%(_BundledPluginAssembly.Directory)*.dll;%(_BundledPluginAssembly.RootDir)%(_BundledPluginAssembly.Directory)*.deps.json">
+        <PluginName>%(_BundledPluginAssembly.Filename)</PluginName>
+      </_BundledPluginFile>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CopyBundledPlugins" AfterTargets="Build" DependsOnTargets="_CollectBundledPluginFiles">
+    <Copy SourceFiles="@(_BundledPluginFile)"
+          DestinationFiles="@(_BundledPluginFile->'$(OutDir)$(BundledPluginsDir)%(PluginName)/%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="PublishBundledPlugins" AfterTargets="Publish" DependsOnTargets="_CollectBundledPluginFiles">
+    <Copy SourceFiles="@(_BundledPluginFile)"
+          DestinationFiles="@(_BundledPluginFile->'$(PublishDir)$(BundledPluginsDir)%(PluginName)/%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
+  </Target>
+</Project>
